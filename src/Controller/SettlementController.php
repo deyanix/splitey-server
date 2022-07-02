@@ -10,11 +10,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[OA\Tag(name: 'Settlement')]
 class SettlementController extends AbstractController {
-	/**
-	 * @Nelmio\Areas("settlement")
-	 */
-	#[Rest\Get("/api/settlements/{id<\d+>}/summary")]
+	#[Rest\Get("/settlements/{id<\d+>}/summary")]
 	#[Rest\View(statusCode: 200)]
+	#[OA\Get(summary: 'TODO')]
 	#[OA\Response(
 		response: 200,
 		description: 'Returns the rewards of an user',

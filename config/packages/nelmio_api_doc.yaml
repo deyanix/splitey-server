@@ -5,6 +5,6 @@ nelmio_api_doc:
             description: Split bills
             version: 1.0.0
     areas:
-        path_patterns: # an array of regexps (document only routes under /api, expect /api/doc)
-            - ^/api(?!/doc$)
-        disable_default_routes: true
+        default:
+            path_patterns:
+                - ^/[^_]

@@ -10,5 +10,3 @@ fos_rest:
         rules:
             - { path: ^/, prefer_extension: true, fallback_format: json, priorities: [ json ] }
     param_fetcher_listener: force
-    body_listener:
-        array_normalizer: fos_rest.normalizer.camel_keys
