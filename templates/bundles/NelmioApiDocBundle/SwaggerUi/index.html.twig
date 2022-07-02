@@ -1,0 +1,21 @@
+{% extends '@!NelmioApiDoc/SwaggerUi/index.html.twig' %}
+
+{% block svg_icons %}
+{% endblock svg_icons %}
+
+{% block swagger_ui %}
+    <div id="swagger-ui"></div>
+{% endblock %}
+
+{% block header_block %}
+{% endblock header_block %}
+
+{% block stylesheets %}
+    {{ nelmioAsset(assets_mode, 'swagger-ui/swagger-ui.css') }}
+    <style>
+        body {
+            margin: 0;
+        }
+    </style>
+{% endblock stylesheets %}
+
