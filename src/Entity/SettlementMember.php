@@ -22,4 +22,32 @@ class SettlementMember {
 	#[ORM\ManyToOne(targetEntity: ExternalContact::class, cascade: ['persist'])]
 	#[ORM\JoinColumn(name: "external_contact_id", referencedColumnName: 'id', nullable: true)]
 	private ?ExternalContact $externalContact;
+
+	public function getId(): int {
+		return $this->id;
+	}
+
+	public function getSettlement(): Settlement {
+		return $this->settlement;
+	}
+
+	public function setSettlement(Settlement $settlement): void {
+		$this->settlement = $settlement;
+	}
+
+	public function getUser(): ?User {
+		return $this->user;
+	}
+
+	public function setUser(?User $user): void {
+		$this->user = $user;
+	}
+
+	public function getExternalContact(): ?ExternalContact {
+		return $this->externalContact;
+	}
+
+	public function setExternalContact(?ExternalContact $externalContact): void {
+		$this->externalContact = $externalContact;
+	}
 }

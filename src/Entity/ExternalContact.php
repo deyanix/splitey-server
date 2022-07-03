@@ -10,8 +10,10 @@ class ExternalContact {
 	#[ORM\GeneratedValue]
 	#[ORM\Column(type: 'integer', options: ['unsigned' => true])]
 	private int $id;
+
 	#[ORM\Column(type: 'string', length: 31)]
 	private string $firstName;
+
 	#[ORM\Column(type: 'string', length: 63)]
 	private string $lastName;
 

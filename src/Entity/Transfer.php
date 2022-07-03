@@ -17,4 +17,24 @@ class Transfer {
 	#[ORM\ManyToOne(targetEntity: SettlementMember::class, cascade: ['persist'])]
 	#[ORM\JoinColumn(name: "paying_member_id", referencedColumnName: 'id', nullable: true)]
 	private SettlementMember $payingMember;
+
+	public function getId(): int {
+		return $this->id;
+	}
+
+	public function getName(): string {
+		return $this->name;
+	}
+
+	public function setName(string $name): void {
+		$this->name = $name;
+	}
+
+	public function getPayingMember(): SettlementMember {
+		return $this->payingMember;
+	}
+
+	public function setPayingMember(SettlementMember $payingMember): void {
+		$this->payingMember = $payingMember;
+	}
 }

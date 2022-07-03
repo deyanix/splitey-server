@@ -1,4 +1,10 @@
 jms_serializer:
+    property_naming:
+        id: 'jms_serializer.identical_property_naming_strategy'
+    handlers:
+        datetime:
+            default_format: "Y-m-d\\TH:i:sP" # ATOM
+            default_timezone: "UTC"
     visitors:
         xml_serialization:
             format_output: '%kernel.debug%'

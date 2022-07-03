@@ -4,18 +4,18 @@ namespace App\Controller;
 
 use App\Repository\SettlementRepository;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use Nelmio\ApiDocBundle\Annotation as Nelmio;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+#[Rest\Route('/settlements')]
 #[OA\Tag(name: 'Settlement')]
 class SettlementController extends AbstractController {
-	#[Rest\Get("/settlements/{id<\d+>}/summary")]
+	#[Rest\Get("/{id<\d+>}/summary")]
 	#[Rest\View(statusCode: 200)]
-	#[OA\Get(summary: 'TODO')]
+	#[OA\Get(summary: 'Gets a settlement summary')]
 	#[OA\Response(
 		response: 200,
-		description: 'Returns the rewards of an user',
+		description: 'Returns the summary of settlement',
 		content: new OA\JsonContent(
 			properties: [
 				new OA\Property(
@@ -35,11 +35,11 @@ class SettlementController extends AbstractController {
 	)]
 	#[OA\Parameter(
 		name: 'id',
-		description: 'The field used to order rewards',
+		description: 'Identifier of the settlement',
 		in: 'path',
 		schema: new OA\Schema(type: 'integer')
 	)]
-	public function index(int $id, SettlementRepository $repository) {
+	public function summary(int $id, SettlementRepository $repository): array {
 		return ['data' => $repository->getSummary($id)];
 	}
 }

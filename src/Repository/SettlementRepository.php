@@ -10,7 +10,7 @@ use Doctrine\Persistence\ManagerRegistry;
 class SettlementRepository extends ServiceEntityRepository {
 	use QueryHelperTrait;
 
-	function __construct(ManagerRegistry $registry) {
+	public function __construct(ManagerRegistry $registry) {
 		parent::__construct($registry, Settlement::class);
 	}
 

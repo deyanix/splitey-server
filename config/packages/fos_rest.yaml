@@ -10,3 +10,8 @@ fos_rest:
         rules:
             - { path: ^/, prefer_extension: true, fallback_format: json, priorities: [ json ] }
     param_fetcher_listener: force
+    body_listener:
+        enabled: true
+        throw_exception_on_unsupported_content_type:  true
+        decoders:
+            json: fos_rest.decoder.json

@@ -2,27 +2,34 @@
 
 namespace App\Entity;
 
+use App\Repository\UserRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface {
 	#[ORM\Id]
 	#[ORM\GeneratedValue]
 	#[ORM\Column(type: 'integer', options: ['unsigned' => true])]
 	private int $id;
+
 	#[ORM\Column(type: 'string', length: 31, unique: true)]
 	private string $username;
+
 	#[ORM\Column(type: 'string', length: 95)]
 	private string $password;
+
 	#[ORM\Column(type: 'string', length: 63)]
 	private string $email;
+
 	#[ORM\Column(type: 'string', length: 31)]
 	private string $firstName;
+
 	#[ORM\Column(type: 'string', length: 63)]
 	private string $lastName;
+
 	#[ORM\ManyToMany(targetEntity: ExternalContact::class, cascade: ['persist'])]
 	#[ORM\JoinTable(
 		name: "user_external_contact",
@@ -30,6 +37,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
 		inverseJoinColumns: [new ORM\JoinColumn(name: "external_contact_id", referencedColumnName: "id")]
 	)]
 	private Collection $externalContacts;
+
 	#[ORM\ManyToMany(targetEntity: User::class, cascade: ['persist'])]
 	#[ORM\JoinTable(
 		name: "user_internal_contact",
