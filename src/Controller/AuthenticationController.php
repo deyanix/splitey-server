@@ -74,9 +74,9 @@ class AuthenticationController extends AbstractController {
 			$device->setUser($user);
 		}
 
+		$this->refreshTokenRepository->invalidateTokensByDevice($device);
 		$accessToken = $this->accessTokenService->createToken($user->getUsername());
 		$refreshToken = $this->refreshTokenService->createToken($device, $rememberMe);
-		$this->refreshTokenRepository->invalidateTokensByDevice($refreshToken->getDevice());
 		return [
 			'accessToken' => $accessToken->toString(),
 			'refreshToken' => $refreshToken->getToken(),
