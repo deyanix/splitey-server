@@ -8,24 +8,21 @@ use App\Repository\RefreshTokenRepository;
 use App\Repository\UserRepository;
 use App\Service\Security\AccessTokenService;
 use App\Service\Security\RefreshTokenService;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Exception;
-use Nelmio\ApiDocBundle\Model\Model;
+use Nelmio\ApiDocBundle\Annotation as Nelmio;
 use OpenApi\Attributes as OA;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints\DateTime;
-use Nelmio\ApiDocBundle\Annotation as Nelmio;
 
 #[Rest\Route('/auth')]
 #[OA\Tag(name: 'Authentication')]
+#[Nelmio\Security(name: null)]
 class AuthenticationController extends AbstractController {
 	private EntityManagerInterface $entityManager;
 	private RefreshTokenService $refreshTokenService;
@@ -51,12 +48,12 @@ class AuthenticationController extends AbstractController {
 	}
 
 	#[Rest\Post("/login")]
-	#[Rest\View(statusCode: 200)]
 	#[Rest\RequestParam('login', description: 'Name or email of the user')]
 	#[Rest\RequestParam('password', description: 'The password in plain text')]
 	#[Rest\RequestParam('deviceUuid', description: 'UUID', nullable: true)]
 	#[Rest\RequestParam('rememberMe', default: false)]
-	#[OA\Post(summary: 'Get a authentication token')]
+	#[Rest\View(statusCode: 200)]
+	#[OA\Post(summary: 'Get authentication tokens')]
 	public function login(string $login, string $password, ?string $deviceUuid, bool $rememberMe): array {
 		$user = $this->userRepository->findByUsernameOrEmail($login);
 		if ($user === null) {
@@ -79,6 +76,7 @@ class AuthenticationController extends AbstractController {
 
 		$accessToken = $this->accessTokenService->createToken($user->getUsername());
 		$refreshToken = $this->refreshTokenService->createToken($device, $rememberMe);
+		$this->refreshTokenRepository->invalidateTokensByDevice($refreshToken->getDevice());
 		return [
 			'accessToken' => $accessToken->toString(),
 			'refreshToken' => $refreshToken->getToken(),
@@ -87,25 +85,23 @@ class AuthenticationController extends AbstractController {
 		];
 	}
 
-	#[OA\Response(
-		response: 200,
-		description: 't',
-		content: new OA\JsonContent(type: 'array', items: new OA\Items(type: 'string'))
-	)]
 	#[Rest\Post('/refresh', name: 'refresh')]
 	#[Rest\RequestParam('refreshToken')]
 	#[Rest\View(statusCode: 200)]
+	#[OA\Post(
+		summary: 'Refresh authentication tokens'
+	)]
 	public function refresh(string $refreshToken) {
 		$token = $this->refreshTokenRepository->findOneBy(['token' => $refreshToken]);
 		try {
 			$this->refreshTokenService->validateToken($token);
 		} catch (Exception) {
-			$this->refreshTokenRepository->invalidateTokensByPrevious($token);
+			$this->refreshTokenRepository->invalidateTokensByDevice($token->getDevice());
 			throw new UnauthorizedHttpException('Invalid token provided', 'Invalid token provided');
 		}
 
 		if ($token->getRefreshDate() >= new DateTime()) {
-			$this->refreshTokenRepository->invalidateTokensByPrevious($token);
+			$this->refreshTokenRepository->invalidateTokensByDevice($token->getDevice());
 			$refreshToken = $this->refreshTokenService->createToken($token->getDevice());
 		} else {
 			$refreshToken = $token;
@@ -117,5 +113,23 @@ class AuthenticationController extends AbstractController {
 		$loginResult->setRefreshToken($refreshToken->getToken());
 		$loginResult->setRefreshTokenExpirationDate($refreshToken->getExpirationDate());
 		return $loginResult;
+	}
+
+	#[Rest\View(statusCode: 200)]
+	#[Rest\Post('/invalidate', name: 'invalidate')]
+	#[Rest\RequestParam('refreshToken')]
+	#[OA\Post(summary: 'Invalid refresh tokens')]
+	public function invalidate(string $refreshToken) {
+		$token = $this->refreshTokenRepository->findOneBy(['token' => $refreshToken]);
+		if (!$token) {
+			throw new UnauthorizedHttpException('Invalid refresh token.', 'Invalid refresh token.');
+		}
+		try {
+			$this->refreshTokenService->validateToken($token);
+		} catch (Exception) {
+			throw new UnauthorizedHttpException('Invalid refresh token.', 'Invalid refresh token.');
+		}
+		$this->refreshTokenRepository->invalidateTokensByDevice($token->getDevice());
+		return ['result' => true];
 	}
 }

@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Device;
 use App\Entity\RefreshToken;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -15,13 +16,13 @@ class RefreshTokenRepository extends ServiceEntityRepository {
 		parent::__construct($registry, RefreshToken::class);
 	}
 
-	public function invalidateTokensByPrevious(RefreshToken $token): void {
+	public function invalidateTokensByDevice(Device $device): void {
 		$this->createQueryBuilder('rt')
 			->update('App:RefreshToken', 'rt')
 			->set('rt.invalidationDate', ':invalidationDate')
 			->where('rt.device = :device')
 			->setParameter('invalidationDate', new DateTimeImmutable(), Types::DATETIME_IMMUTABLE)
-			->setParameter('device', $token->getDevice())
+			->setParameter('device', $device)
 			->getQuery()
 			->execute();
 	}
