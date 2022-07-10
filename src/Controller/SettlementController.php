@@ -47,7 +47,6 @@ class SettlementController extends AbstractController {
 	)]
 	public function getAll(int $offset, int $length, SettlementRepository $repository) {
 		return [
-			'total' => $repository->countByUser($this->getUser()),
 			'data' => $repository->findByUser($this->getUser(), $offset, $length)
 		];
 	}

@@ -14,7 +14,7 @@ class SettlementMember {
 	private int $id;
 
 	#[ORM\ManyToOne(targetEntity: Settlement::class, cascade: ['persist'])]
-	#[ORM\JoinColumn(name: "settlement_id", referencedColumnName: 'id', nullable: true)]
+	#[ORM\JoinColumn(name: "settlement_id", referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
 	private Settlement $settlement;
 
 	#[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
