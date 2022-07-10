@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as Serializer;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -13,21 +14,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
 	#[ORM\Id]
 	#[ORM\GeneratedValue]
 	#[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+	#[Serializer\Groups(["user:read"])]
 	private int $id;
 
 	#[ORM\Column(type: 'string', length: 31, unique: true)]
+	#[Serializer\Groups(["user:read"])]
 	private string $username;
 
 	#[ORM\Column(type: 'string', length: 95)]
 	private string $password;
 
 	#[ORM\Column(type: 'string', length: 63)]
+	#[Serializer\Groups(["user:secret:read"])]
 	private string $email;
 
 	#[ORM\Column(type: 'string', length: 31)]
+	#[Serializer\Groups(["user:read"])]
 	private string $firstName;
 
 	#[ORM\Column(type: 'string', length: 63)]
+	#[Serializer\Groups(["user:read"])]
 	private string $lastName;
 
 	#[ORM\ManyToMany(targetEntity: ExternalContact::class, cascade: ['persist'])]

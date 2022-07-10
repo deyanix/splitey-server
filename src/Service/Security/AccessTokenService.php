@@ -62,7 +62,7 @@ class AccessTokenService {
 			->relatedTo($username)
 			->canOnlyBeUsedAfter($now)
 			->withClaim('roles', ['ROLE_USER'])
-			->expiresAt($now->modify('+15 minutes'))
+			->expiresAt($now->modify('+24 hours'))
 			->getToken($this->getConfiguration()->signer(), $this->getConfiguration()->signingKey());
 	}
 

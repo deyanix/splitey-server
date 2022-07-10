@@ -19,6 +19,7 @@ services:
         exclude:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
+            - '../src/Exception/'
             - '../src/Kernel.php'
 
     # add more service definitions when explicit configuration is needed
@@ -27,3 +28,13 @@ services:
     App\Service\Security\AccessTokenService:
         arguments:
             $host: '@=service("request_stack").getCurrentRequest().getHost()'
+
+    App\Serializer\RelationsHandler:
+        arguments:
+            - '@doctrine.orm.entity_manager'
+        tags:
+            - { name: jms_serializer.handler, type: Relation, direction: serialization, format: json, method: serializeRelation}
+            - { name: jms_serializer.handler, type: Relation, direction: deserialization, format: json, method: deserializeRelation}
+            - { name: jms_serializer.handler, type: Relation<?>, direction: serialization, format: json, method: serializeRelation}
+            - { name: jms_serializer.handler, type: Relation<?>, direction: deserialization, format: json, method: deserializeRelation}
+

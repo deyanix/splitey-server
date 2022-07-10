@@ -72,9 +72,10 @@ class AuthenticationController extends AbstractController {
 				$device->setUuid(Uuid::v4());
 			}
 			$device->setUser($user);
+		} else {
+			$this->refreshTokenRepository->invalidateTokensByDevice($device);
 		}
 
-		$this->refreshTokenRepository->invalidateTokensByDevice($device);
 		$accessToken = $this->accessTokenService->createToken($user->getUsername());
 		$refreshToken = $this->refreshTokenService->createToken($device, $rememberMe);
 		return [
