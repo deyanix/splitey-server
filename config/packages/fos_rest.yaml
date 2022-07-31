@@ -6,6 +6,12 @@ fos_rest:
         view_response_listener: true
         failed_validation: 422
         empty_content: 204
+    exception:
+        map_exception_codes: true
+        codes:
+            'App\Exception\EntityNotFoundException': 404
+        messages:
+            'App\Exception\EntityNotFoundException': true
     format_listener:
         rules:
             - { path: ^/, prefer_extension: true, fallback_format: json, priorities: [ json ] }

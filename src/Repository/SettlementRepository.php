@@ -23,7 +23,7 @@ class SettlementRepository extends ServiceEntityRepository {
 		$rsmTotal = new Query\ResultSetMappingBuilder($this->getEntityManager());
 		$rsmTotal->addScalarResult('total', 'total', 'integer');
 
-		$query = $this->prepareNativeQuery('Settlement/Search', $rsm)
+		$query = $this->prepareNativeQuery('Search', $rsm)
 			->setParameter('user_id', $user->getId())
 			->setParameter('offset', $offset)
 			->setParameter('length', $length);

@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Settlement;
 use App\Entity\SettlementMember;
+use App\Entity\User;
+use App\Exception\EntityNotFoundException;
 use App\Exception\FormValidationException;
 use App\Form\SettlementForm;
 use App\Repository\SettlementRepository;
@@ -87,7 +89,6 @@ class SettlementController extends AbstractController {
 	}
 
 	#[Rest\Put("/{id<\d+>}")]
-	#[Rest\Post]
 	#[Rest\View(statusCode: 200, serializerGroups: ["settlement:read", "settlement_member:read"])]
 	#[OA\Put(summary: 'Update a settlement', requestBody: new OA\RequestBody(content: new OA\JsonContent(properties: [
 		new OA\Property(
@@ -98,7 +99,7 @@ class SettlementController extends AbstractController {
 	public function update(int $id, Request $request,  SettlementRepository $repository) {
 		$settlement = $repository->findOneByUser($id, $this->getUser());
 		if ($settlement === null) {
-			throw new NotFoundHttpException('Not found entity');
+			throw new EntityNotFoundException('Not found entity');
 		}
 		$form = $this->formFactory->create(SettlementForm::class, $settlement);
 
@@ -123,6 +124,23 @@ class SettlementController extends AbstractController {
 		}
 
 		$this->entityManager->remove($settlement);
+		$this->entityManager->flush();
+	}
+
+	#[Rest\Put("/{id<\d+>}/members/user")]
+	#[Rest\RequestParam('userId', requirements: '\d+', nullable: true)]
+	#[Rest\View(statusCode: 200)]
+//	#[OA\Put(summary: 'Add a member to settlement')]
+	public function addUserMember(int $id, int $userId, SettlementRepository $repository) {
+		$settlement = $repository->findOneByUser($id, $this->getUser());
+		if ($settlement === null) {
+			throw new EntityNotFoundException('Not found entity');
+		}
+		$member = new SettlementMember();
+		$member->setUser($this->entityManager->getReference(User::class, $userId));
+		$member->setSettlement($settlement);
+
+		$this->entityManager->persist($settlement);
 		$this->entityManager->flush();
 	}
 
