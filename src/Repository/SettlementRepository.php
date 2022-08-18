@@ -46,6 +46,19 @@ class SettlementRepository extends ServiceEntityRepository {
 			->getOneOrNullResult();
 	}
 
+	public function isSettlementMember(int $id, User $user): bool {
+		return $this->createQueryBuilder('s')
+			->select('1')
+			->innerJoin('s.members', 'sm', '')
+			->where('s.id = :id')
+			->andWhere('sm.user = :user')
+			->setParameter('id', $id)
+			->setParameter('user', $user)
+			->setMaxResults(1)
+			->getQuery()
+			->getSingleScalarResult() === 1;
+	}
+
 	public function getSummary(int $settlementId): array {
 		$statement = $this->prepareQuery('Settlement/Summary');
 		$statement->bindValue('settlement_id', $settlementId);

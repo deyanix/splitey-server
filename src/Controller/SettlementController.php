@@ -114,7 +114,6 @@ class SettlementController extends AbstractController {
 	}
 
 	#[Rest\Delete("/{id<\d+>}")]
-	#[Rest\Post]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Delete(summary: 'Delete a settlement')]
 	public function delete(int $id, SettlementRepository $repository) {
@@ -130,14 +129,20 @@ class SettlementController extends AbstractController {
 	#[Rest\Put("/{id<\d+>}/members/user")]
 	#[Rest\RequestParam('userId', requirements: '\d+', nullable: true)]
 	#[Rest\View(statusCode: 200)]
-//	#[OA\Put(summary: 'Add a member to settlement')]
+	#[OA\Put(summary: 'Add a member to settlement')]
 	public function addUserMember(int $id, int $userId, SettlementRepository $repository) {
 		$settlement = $repository->findOneByUser($id, $this->getUser());
 		if ($settlement === null) {
 			throw new EntityNotFoundException('Not found entity');
 		}
+
+		$user = $this->entityManager->getReference(User::class, $userId);
+		if ($repository->isSettlementMember($id, $user)) {
+			throw new EntityNotFoundException('User is this settlement\'s member');
+		}
+
 		$member = new SettlementMember();
-		$member->setUser($this->entityManager->getReference(User::class, $userId));
+		$member->setUser($user);
 		$member->setSettlement($settlement);
 
 		$this->entityManager->persist($settlement);

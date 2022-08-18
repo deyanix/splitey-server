@@ -3,6 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Device;
+use App\Entity\SettlementMember;
+use App\Exception\FormValidationException;
+use App\Form\CreateAccountForm;
+use App\Form\SettlementForm;
 use App\Model\LoginResult;
 use App\Repository\RefreshTokenRepository;
 use App\Repository\UserRepository;
@@ -15,6 +19,8 @@ use Nelmio\ApiDocBundle\Annotation as Nelmio;
 use OpenApi\Attributes as OA;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Uid\Uuid;
@@ -31,13 +37,15 @@ class AuthenticationController extends AbstractController {
 	private EntityRepository $deviceRepository;
 	private UserRepository $userRepository;
 	private UserPasswordHasherInterface $passwordHasher;
+	private FormFactoryInterface $formFactory;
 
 	public function __construct(EntityManagerInterface      $entityManager,
 								RefreshTokenService         $refreshTokenService,
 	                            AccessTokenService          $accessTokenService,
 	                            RefreshTokenRepository      $refreshTokenRepository,
 	                            UserRepository              $userRepository,
-	                            UserPasswordHasherInterface $passwordHasher) {
+	                            UserPasswordHasherInterface $passwordHasher,
+	                            FormFactoryInterface        $formFactory) {
 		$this->entityManager = $entityManager;
 		$this->refreshTokenService = $refreshTokenService;
 		$this->accessTokenService = $accessTokenService;
@@ -45,6 +53,7 @@ class AuthenticationController extends AbstractController {
 		$this->userRepository = $userRepository;
 		$this->deviceRepository = $entityManager->getRepository(Device::class);
 		$this->passwordHasher = $passwordHasher;
+		$this->formFactory = $formFactory;
 	}
 
 	#[Rest\Post("/login")]
@@ -132,5 +141,21 @@ class AuthenticationController extends AbstractController {
 		}
 		$this->refreshTokenRepository->invalidateTokensByDevice($token->getDevice());
 		return ['result' => true];
+	}
+
+	#[Rest\View(statusCode: 200)]
+	#[Rest\Post('/create-account', name: 'create_account')]
+	#[OA\Post(summary: 'Create an account')]
+	public function createAccount(Request $request) {
+		$form = $this->formFactory->create(CreateAccountForm::class);
+
+		$form->submit($request->request->all());
+		if (!$form->isValid()) {
+			throw new FormValidationException($form);
+		}
+
+		$user = $form->getData();
+
+		return $user;
 	}
 }
