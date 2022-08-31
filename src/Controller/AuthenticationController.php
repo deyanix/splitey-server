@@ -10,6 +10,7 @@ use App\Form\SettlementForm;
 use App\Model\LoginResult;
 use App\Repository\RefreshTokenRepository;
 use App\Repository\UserRepository;
+use App\Service\ReCaptchaService;
 use App\Service\Security\AccessTokenService;
 use App\Service\Security\RefreshTokenService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -145,8 +146,29 @@ class AuthenticationController extends AbstractController {
 
 	#[Rest\View(statusCode: 200)]
 	#[Rest\Post('/create-account', name: 'create_account')]
-	#[OA\Post(summary: 'Create an account')]
-	public function createAccount(Request $request) {
+	#[OA\Post(summary: 'Create an account', requestBody: new OA\RequestBody(content: new OA\JsonContent(properties: [
+		new OA\Property(
+			property: 'firstName',
+			type: 'string'
+		),
+		new OA\Property(
+			property: 'lastName',
+			type: 'string'
+		),
+		new OA\Property(
+			property: 'username',
+			type: 'string'
+		),
+		new OA\Property(
+			property: 'email',
+			type: 'string'
+		),
+		new OA\Property(
+			property: 'password',
+			type: 'string'
+		)]
+	)))]
+	public function createAccount(Request $request, ReCaptchaService $reCaptchaService) {
 		$form = $this->formFactory->create(CreateAccountForm::class);
 
 		$form->submit($request->request->all());
@@ -156,6 +178,6 @@ class AuthenticationController extends AbstractController {
 
 		$user = $form->getData();
 
-		return $user;
+		return ['result' => $reCaptchaService->checkCaptcha($user->getCaptcha(), $request->getClientIp())];
 	}
 }

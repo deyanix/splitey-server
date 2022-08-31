@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Settlement;
 use App\Entity\User;
+use App\Model\CreateAccount;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -20,12 +21,13 @@ class CreateAccountForm extends AbstractType {
 			->add('username', TextType::class)
 			->add('email', EmailType::class)
 			->add('password', PasswordType::class)
-			->add('confirmPassword', RepeatedType::class);
+			->add('captcha', TextType::class);
 	}
 
 	public function configureOptions(OptionsResolver $resolver) {
 		$resolver->setDefaults([
-			'csrf_protection' => false
+			'csrf_protection' => false,
+			'data_class' => CreateAccount::class
 		]);
 	}
 
