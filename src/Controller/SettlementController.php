@@ -9,6 +9,7 @@ use App\Exception\EntityNotFoundException;
 use App\Exception\FormValidationException;
 use App\Form\SettlementForm;
 use App\Repository\SettlementRepository;
+use App\Service\SettlementService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -180,5 +181,33 @@ class SettlementController extends AbstractController {
 	)]
 	public function summary(int $id, SettlementRepository $repository): array {
 		return ['data' => $repository->getSummary($id)];
+	}
+
+	#[Rest\Get("/{id<\d+>}/arrangement")]
+	#[Rest\View(statusCode: 200)]
+	#[OA\Get(summary: 'Gets a settlement arrangement')]
+	#[OA\Parameter(
+		name: 'id',
+		description: 'Identifier of the settlement',
+		in: 'path',
+		schema: new OA\Schema(type: 'integer')
+	)]
+	public function arrangement(int $id, SettlementRepository $repository): array {
+
+		return ['data' => $repository->getArrangement($id)];
+	}
+
+	#[Rest\Get("/{id<\d+>}/arrangement/optimal")]
+	#[Rest\View(statusCode: 200)]
+	#[OA\Get(summary: 'Gets a settlement optimized arrangement')]
+	#[OA\Parameter(
+		name: 'id',
+		description: 'Identifier of the settlement',
+		in: 'path',
+		schema: new OA\Schema(type: 'integer')
+	)]
+	public function arrangementOptimal(int $id, SettlementService $service): array {
+
+		return ['data' => $service->getArrangement($id)];
 	}
 }

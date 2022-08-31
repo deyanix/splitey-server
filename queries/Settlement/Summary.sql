@@ -1,4 +1,4 @@
-SELECT sm.id                                 AS memberId,
+SELECT sm.id                                 AS member_id,
        IFNULL(s1.sum, 0) - IFNULL(s2.sum, 0) AS balance
 FROM settlement_member sm
 	     LEFT JOIN (SELECT t.paying_member_id AS member_id, SUM(td.amount) AS sum

@@ -4,6 +4,8 @@ namespace App\Repository;
 
 use App\Entity\Settlement;
 use App\Entity\User;
+use App\Model\SettlementArrangementItem;
+use App\Model\SettlementSummaryItem;
 use App\Repository\Helper\QueryHelperTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query;
@@ -59,10 +61,25 @@ class SettlementRepository extends ServiceEntityRepository {
 			->getSingleScalarResult() === 1;
 	}
 
+	/**
+	 * @param int $settlementId Settlement id
+	 * @return SettlementSummaryItem[] Settlement's summary items
+	 * @throws \Doctrine\DBAL\Exception Database exception
+	 */
 	public function getSummary(int $settlementId): array {
 		$statement = $this->prepareQuery('Settlement/Summary');
 		$statement->bindValue('settlement_id', $settlementId);
-		return $statement->executeQuery()->fetchAllAssociative();
+		$result = $statement->executeQuery()->fetchAllAssociative();
+
+		return array_map(fn ($row) => new SettlementSummaryItem($row['member_id'], $row['balance']), $result);
+	}
+
+	public function getArrangement(int $settlementId): array {
+		$statement = $this->prepareQuery('Settlement/Arrangement');
+		$statement->bindValue('settlement_id', $settlementId);
+		$result =  $statement->executeQuery()->fetchAllAssociative();
+
+		return array_map(fn ($row) => new SettlementArrangementItem($row['creditor_id'], $row['debtor_id'], $row['amount']), $result);
 	}
 }
 
