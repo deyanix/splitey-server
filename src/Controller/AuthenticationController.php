@@ -4,9 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Device;
 use App\Entity\SettlementMember;
+use App\Entity\User;
 use App\Exception\FormValidationException;
 use App\Form\CreateAccountForm;
 use App\Form\SettlementForm;
+use App\Model\CreateAccount;
 use App\Model\LoginResult;
 use App\Repository\RefreshTokenRepository;
 use App\Repository\UserRepository;
@@ -20,6 +22,7 @@ use Nelmio\ApiDocBundle\Annotation as Nelmio;
 use OpenApi\Attributes as OA;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -166,9 +169,13 @@ class AuthenticationController extends AbstractController {
 		new OA\Property(
 			property: 'password',
 			type: 'string'
-		)]
+		),
+		new OA\Property(
+			property: 'captcha',
+			type: 'string'
+		)],
 	)))]
-	public function createAccount(Request $request, ReCaptchaService $reCaptchaService) {
+	public function createAccount(Request $request) {
 		$form = $this->formFactory->create(CreateAccountForm::class);
 
 		$form->submit($request->request->all());
@@ -176,8 +183,30 @@ class AuthenticationController extends AbstractController {
 			throw new FormValidationException($form);
 		}
 
-		$user = $form->getData();
+		if ($this->userRepository->findOneBy(['email' => $form->get('email')->getData()]) !== null)  {
+			$form->get('email')->addError(new FormError('An account with this email address already exists'));
+			throw new FormValidationException($form);
+		}
 
-		return ['result' => $reCaptchaService->checkCaptcha($user->getCaptcha(), $request->getClientIp())];
+		if ($this->userRepository->findOneBy(['username' => $form->get('username')->getData()]) !== null)  {
+			$form->get('email')->addError(new FormError('An account with this username already exists'));
+			throw new FormValidationException($form);
+		}
+
+		/** @var CreateAccount $createAccount */
+		$createAccount = $form->getData();
+
+		$user = new User();
+		$user->setEmail($createAccount->getEmail());
+		$user->setFirstName($createAccount->getFirstName());
+		$user->setLastName($createAccount->getLastName());
+		$user->setUsername($createAccount->getUsername());
+		$user->setPassword($this->passwordHasher->hashPassword($user, $createAccount->getPassword()));
+		$this->entityManager->persist($user);
+		$this->entityManager->flush();
+
+		return [
+			'data' => $user->getId()
+		];
 	}
 }
