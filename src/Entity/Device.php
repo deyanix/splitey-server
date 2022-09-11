@@ -2,12 +2,10 @@
 
 namespace App\Entity;
 
+use App\Repository\DeviceRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Doctrine\UuidGenerator;
-use Ramsey\Uuid\UuidInterface;
-use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: DeviceRepository::class)]
 class Device {
 	#[ORM\Id]
 	#[ORM\GeneratedValue]

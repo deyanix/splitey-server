@@ -3,32 +3,39 @@
 namespace App\Controller;
 
 use App\Entity\Device;
-use App\Entity\SettlementMember;
+use App\Entity\ResetPassword;
 use App\Entity\User;
 use App\Exception\FormValidationException;
+use App\Form\AuthorizedResetPasswordForm;
 use App\Form\CreateAccountForm;
-use App\Form\SettlementForm;
-use App\Model\CreateAccount;
+use App\Form\ResetPasswordForm;
+use App\Model\Form\AuthorizedResetPasswordData;
+use App\Model\Form\CreateAccountData;
+use App\Model\Form\ResetPasswordData;
 use App\Model\LoginResult;
+use App\Repository\DeviceRepository;
 use App\Repository\RefreshTokenRepository;
+use App\Repository\ResetPasswordRepository;
 use App\Repository\UserRepository;
-use App\Service\ReCaptchaService;
 use App\Service\Security\AccessTokenService;
 use App\Service\Security\RefreshTokenService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Exception;
+use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation as Nelmio;
 use OpenApi\Attributes as OA;
-use FOS\RestBundle\Controller\Annotations as Rest;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Uid\Uuid;
-use Symfony\Component\Validator\Constraints\DateTime;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Rest\Route('/auth')]
 #[OA\Tag(name: 'Authentication')]
@@ -38,7 +45,7 @@ class AuthenticationController extends AbstractController {
 	private RefreshTokenService $refreshTokenService;
 	private AccessTokenService $accessTokenService;
 	private RefreshTokenRepository $refreshTokenRepository;
-	private EntityRepository $deviceRepository;
+	private DeviceRepository $deviceRepository;
 	private UserRepository $userRepository;
 	private UserPasswordHasherInterface $passwordHasher;
 	private FormFactoryInterface $formFactory;
@@ -193,7 +200,7 @@ class AuthenticationController extends AbstractController {
 			throw new FormValidationException($form);
 		}
 
-		/** @var CreateAccount $createAccount */
+		/** @var CreateAccountData $createAccount */
 		$createAccount = $form->getData();
 
 		$user = new User();
@@ -209,4 +216,88 @@ class AuthenticationController extends AbstractController {
 			'data' => $user->getId()
 		];
 	}
+
+	#[Rest\View(statusCode: 200)]
+	#[Rest\Post('/reset-password', name: 'reset_password')]
+	#[OA\Post(summary: 'Send mail with instruction', requestBody: new OA\RequestBody(content: new OA\JsonContent(properties: [
+		new OA\Property(
+			property: 'email',
+			type: 'string'
+		)],
+	)))]
+	public function resetPassword(Request $request, MailerInterface $mailer) {
+		$form = $this->formFactory->create(ResetPasswordForm::class);
+
+		$form->submit($request->request->all());
+		if (!$form->isValid()) {
+			throw new FormValidationException($form);
+		}
+
+		/** @var ResetPasswordData $resetPasswordData */
+		$resetPasswordData = $form->getData();
+		$user = $this->userRepository->findOneBy(['email' => $resetPasswordData->getEmail()]);
+		if (!($user instanceof User)) {
+			return ['data' => true];
+		}
+
+		$token = strtr(base64_encode(random_bytes(63)), '+/', '-_');
+		$resetPassword = new ResetPassword();
+		$resetPassword->setUser($user);
+		$resetPassword->setToken($token);
+		$resetPassword->setExpirationDate((new DateTime())->modify('+1 hour'));
+		$this->entityManager->persist($resetPassword);
+		$this->entityManager->flush();
+
+		$email = (new TemplatedEmail())
+			->from($_ENV['NOREPLY_ADDRESS'])
+			->to($resetPasswordData->getEmail())
+			->subject('Reset password to Splitey')
+			->text('Hello! Test')
+			->htmlTemplate('emails/reset-password.html.twig')
+			->textTemplate('emails/reset-password.txt.twig')
+			->context([
+				'user' => $user,
+				'url' => $_ENV['WEBAPP_URL'] . $token
+			]);
+		$mailer->send($email);
+		return ['data' => true];
+	}
+
+	#[Rest\View(statusCode: 200)]
+	#[Rest\Post('/authorized-reset-password', name: 'authorized_reset_password')]
+	#[OA\Post(summary: 'Reset password via token', requestBody: new OA\RequestBody(content: new OA\JsonContent(properties: [
+		new OA\Property(
+			property: 'token',
+			type: 'string'
+		),
+		new OA\Property(
+			property: 'password',
+			type: 'string'
+		)],
+	)))]
+	public function authorizedResetPassword(Request $request, ResetPasswordRepository $resetPasswordRepository) {
+		$form = $this->formFactory->create(AuthorizedResetPasswordForm::class);
+
+		$form->submit($request->request->all());
+		if (!$form->isValid()) {
+			throw new FormValidationException($form);
+		}
+
+		/** @var AuthorizedResetPasswordData $data */
+		$data = $form->getData();
+		$resetPassword = $resetPasswordRepository->findOneBy(['token' => $data->getToken()]);
+		if (!($resetPassword instanceof ResetPassword)  || $resetPassword->getUsageDate() !== null || $resetPassword->getExpirationDate() < new DateTime()) {
+			return ['data' => false];
+		}
+
+		$resetPassword->setUsageDate(new DateTime());
+		$this->entityManager->persist($resetPassword);
+
+		$user = $resetPassword->getUser();
+		$user->setPassword($this->passwordHasher->hashPassword($user, $data->getPassword()));
+		$this->entityManager->persist($user);
+		$this->entityManager->flush();
+		return ['data' => true];
+	}
+
 }

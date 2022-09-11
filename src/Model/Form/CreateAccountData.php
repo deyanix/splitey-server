@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Model;
+namespace App\Model\Form;
 
-use Symfony\Component\Validator\Constraints as Assert;
 use App\Validator as AppAssert;
+use Symfony\Component\Validator\Constraints as Assert;
 
-class CreateAccount {
+class CreateAccountData {
 	#[Assert\Length(max: 63)]
 	#[Assert\NotBlank]
 	#[Assert\Type("string")]

@@ -2,9 +2,7 @@
 
 namespace App\Form;
 
-use App\Entity\Settlement;
-use App\Entity\User;
-use App\Model\CreateAccount;
+use App\Model\Form\CreateAccountData;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -26,8 +24,7 @@ class CreateAccountForm extends AbstractType {
 	public function configureOptions(OptionsResolver $resolver) {
 		$resolver->setDefaults([
 			'csrf_protection' => false,
-			'data_class' => CreateAccount::class
+			'data_class' => CreateAccountData::class
 		]);
 	}
-
 }
