@@ -2,12 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\ResetPasswordRepository;
+use App\Repository\EmailConfirmationTokenRepository;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ResetPasswordRepository::class)]
-class ResetPassword {
+#[ORM\Entity(repositoryClass: EmailConfirmationTokenRepository::class)]
+class EmailConfirmationToken {
 	#[ORM\Id]
 	#[ORM\GeneratedValue]
 	#[ORM\Column(type: 'integer', options: ['unsigned' => true])]
@@ -25,6 +25,9 @@ class ResetPassword {
 
 	#[ORM\Column(type: 'datetime')]
 	private DateTime $expirationDate;
+
+	#[ORM\Column(type: 'string', length: 63, nullable: true)]
+	private ?string $newEmail = null;
 
 	public function getId(): int {
 		return $this->id;
@@ -60,5 +63,17 @@ class ResetPassword {
 
 	public function setExpirationDate(DateTime $expirationDate): void {
 		$this->expirationDate = $expirationDate;
+	}
+
+	public function getNewEmail(): ?string {
+		return $this->newEmail;
+	}
+
+	public function setNewEmail(?string $newEmail): void {
+		$this->newEmail = $newEmail;
+	}
+
+	public function isAccountActivation(): bool {
+		return $this->getNewEmail() === null;
 	}
 }

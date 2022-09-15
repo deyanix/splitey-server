@@ -2,11 +2,9 @@
 
 namespace App\Service\Controller;
 
-use App\Entity\CreateAccount;
+use App\Entity\EmailConfirmationToken;
 use App\Entity\User;
 use App\Model\Form\CreateAccountData;
-use App\Service\RandomizerService;
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
@@ -14,54 +12,34 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class CreateAccountService {
-	private EntityManagerInterface $entityManager;
-	private MailerInterface $mailer;
-	private UserPasswordHasherInterface $passwordHasher;
-	private RandomizerService $randomizerService;
-	private UserService $userService;
-
 	public function __construct(
-		EntityManagerInterface $entityManager,
-		MailerInterface $mailer,
-		UserPasswordHasherInterface $passwordHasher,
-		RandomizerService $randomizerService,
-		UserService $userService
-	) {
-		$this->entityManager = $entityManager;
-		$this->mailer = $mailer;
-		$this->passwordHasher = $passwordHasher;
-		$this->randomizerService = $randomizerService;
-		$this->userService = $userService;
-	}
+		private readonly EntityManagerInterface      $entityManager,
+		private readonly MailerInterface             $mailer,
+		private readonly UserPasswordHasherInterface $passwordHasher,
+		private readonly UserService                 $userService,
+		private readonly EmailConfirmationService    $emailConfirmationService,
+	) {}
 
-	private function sendMail(CreateAccount $createAccount): void {
+	private function sendActivationMail(EmailConfirmationToken $token): void {
 		$email = (new TemplatedEmail())
 			->from($_ENV['NOREPLY_ADDRESS'])
-			->to($createAccount->getUser()->getEmail())
+			->to($token->getUser()->getEmail())
 			->subject('Welcome to Splitey')
 			->htmlTemplate('emails/create-account.html.twig')
 			->textTemplate('emails/create-account.txt.twig')
 			->context([
-				'user' => $createAccount->getUser(),
-				'url' => $_ENV['WEBAPP_URL'] . $createAccount->getToken()
+				'user' => $token->getUser(),
+				'url' => $_ENV['WEBAPP_URL'] . $token->getToken()
 			]);
 		$this->mailer->send($email);
 	}
 
-	private function createToken(User $user): CreateAccount {
-		$createAccount = new CreateAccount();
-		$createAccount->setUser($user);
-		$createAccount->setToken($this->randomizerService->getString(63));
-		$createAccount->setExpirationDate((new DateTime())->modify('+12 hours'));
-		return $createAccount;
-	}
-
 	public function createAccount(CreateAccountData $data): User {
-		if ($this->userService->getUserByEmail($data->getEmail()) !== null)  {
+		if ($this->userService->getUserByEmail($data->getEmail()) !== null) {
 			throw new BadRequestException('An account with this email address already exists');
 		}
 
-		if ($this->userService->getUserByUsername($data->getUsername()))  {
+		if ($this->userService->getUserByUsername($data->getUsername())) {
 			throw new BadRequestException('An account with this username already exists');
 		}
 
@@ -73,19 +51,53 @@ class CreateAccountService {
 		$user->setPassword($this->passwordHasher->hashPassword($user, $data->getPassword()));
 		$this->entityManager->persist($user);
 
-		$createAccount = $this->createToken($user);
-		$this->entityManager->persist($createAccount);
-
-		$this->sendMail($createAccount);
+		$token = $this->emailConfirmationService->createToken($user);
+		$this->entityManager->persist($token);
+		$this->sendActivationMail($token);
 		$this->entityManager->flush();
 		return $user;
 	}
 
-	public function resend(User $user): void {
-		$createAccount = $this->createToken($user);
-		$this->entityManager->persist($createAccount);
+	public function resendActivation(User $user): void {
+		if ($user->isActivated()) {
+			throw new BadRequestException('User already is activated');
+		}
 
-		$this->sendMail($createAccount);
+		$token = $this->emailConfirmationService->createToken($user);
+		$this->entityManager->persist($token);
+		$this->sendActivationMail($token);
+		$this->entityManager->flush();
+	}
+
+	public function activate(string $token): void {
+		$token = $this->emailConfirmationService->getToken($token);
+		$this->emailConfirmationService->validateToken($token);
+		if (!$token->isAccountActivation()) {
+			throw new BadRequestException('Given token doesn\'t support activation account');
+		}
+
+		$this->emailConfirmationService->useToken($token);
+		$this->entityManager->persist($token);
+
+		$user = $token->getUser();
+		$user->setActivated(true);
+		$this->entityManager->persist($user);
+		$this->entityManager->flush();
+	}
+
+	public function confirmEmail(string $token): void {
+		$token = $this->emailConfirmationService->getToken($token);
+		$this->emailConfirmationService->validateToken($token);
+		if ($token->isAccountActivation()) {
+			throw new BadRequestException('Given token doesn\'t support email confirmation');
+		}
+
+		$this->emailConfirmationService->useToken($token);
+		$this->entityManager->persist($token);
+
+		$user = $token->getUser();
+		$user->setEmail($token->getNewEmail());
+		$this->entityManager->persist($user);
 		$this->entityManager->flush();
 	}
 }

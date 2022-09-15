@@ -11,21 +11,15 @@ use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
-#[Rest\Route('/settlements')]
+#[Rest\Route('/settlements', name: 'settlement')]
 #[OA\Tag(name: 'Settlement')]
 class SettlementController extends AbstractController {
-	private FormService $formService;
-	private SettlementService $settlementService;
-
 	public function __construct(
-		SettlementService $settlementService,
-		FormService $formService
-	) {
-		$this->formService = $formService;
-		$this->settlementService = $settlementService;
-	}
+		private readonly FormService       $formService,
+		private readonly SettlementService $settlementService,
+	) { }
 
-	#[Rest\Get]
+	#[Rest\Get(name: 'get_all')]
 	#[Rest\View(statusCode: 200, serializerGroups: ["settlement:minimal:read"])]
 	#[Rest\QueryParam('offset', requirements: '\d+', default: 0)]
 	#[Rest\QueryParam('length', requirements: '\d+', default: 20)]
@@ -46,14 +40,14 @@ class SettlementController extends AbstractController {
 		return $this->settlementService->getUserSettlements($offset, $length);
 	}
 
-	#[Rest\Get("/{id<\d+>}")]
+	#[Rest\Get("/{id<\d+>}", name: 'get')]
 	#[Rest\View(statusCode: 200, serializerGroups: ["settlement:read", "settlement_member:read"])]
 	#[OA\Get(summary: 'Get a settlement')]
 	public function get(int $id) {
 		return $this->settlementService->getUserSettlement($id);
 	}
 
-	#[Rest\Post]
+	#[Rest\Post(name: 'create')]
 	#[Rest\View(statusCode: 200, serializerGroups: ["settlement:read", "settlement_member:read"])]
 	#[OA\Post(summary: 'Create a settlement', requestBody: new OA\RequestBody(content: new OA\JsonContent(properties: [
 		new OA\Property(
@@ -66,7 +60,7 @@ class SettlementController extends AbstractController {
 		return $this->settlementService->createSettlement($form->getData());
 	}
 
-	#[Rest\Put("/{id<\d+>}")]
+	#[Rest\Put("/{id<\d+>}", name: 'update')]
 	#[Rest\View(statusCode: 200, serializerGroups: ["settlement:read", "settlement_member:read"])]
 	#[OA\Put(summary: 'Update a settlement', requestBody: new OA\RequestBody(content: new OA\JsonContent(properties: [
 		new OA\Property(
@@ -80,7 +74,7 @@ class SettlementController extends AbstractController {
 		return $this->settlementService->updateSettlement($form->getData());
 	}
 
-	#[Rest\Delete("/{id<\d+>}")]
+	#[Rest\Delete("/{id<\d+>}", name: 'delete')]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Delete(summary: 'Delete a settlement')]
 	public function delete(int $id, SettlementRepository $repository) {
@@ -88,7 +82,7 @@ class SettlementController extends AbstractController {
 		$this->settlementService->deleteSettlement($settlement);
 	}
 
-	#[Rest\Put("/{id<\d+>}/members/user")]
+	#[Rest\Put("/{id<\d+>}/members/user", name: 'add_user_member')]
 	#[Rest\RequestParam('userId', requirements: '\d+', nullable: true)]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Put(summary: 'Add a member to settlement')]
@@ -97,7 +91,7 @@ class SettlementController extends AbstractController {
 		$this->settlementService->addUserMember($settlement, $userId);
 	}
 
-	#[Rest\Get("/{id<\d+>}/summary")]
+	#[Rest\Get("/{id<\d+>}/summary", name: 'summary')]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Get(summary: 'Gets a settlement summary')]
 	#[OA\Response(
@@ -130,7 +124,7 @@ class SettlementController extends AbstractController {
 		return ['data' => $this->settlementService->getSummary($id)];
 	}
 
-	#[Rest\Get("/{id<\d+>}/arrangement")]
+	#[Rest\Get("/{id<\d+>}/arrangement", name: 'arrangement')]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Get(summary: 'Gets a settlement arrangement')]
 	#[OA\Parameter(
@@ -143,7 +137,7 @@ class SettlementController extends AbstractController {
 		return ['data' => $this->settlementService->getArrangement($id)];
 	}
 
-	#[Rest\Get("/{id<\d+>}/arrangement/optimal")]
+	#[Rest\Get("/{id<\d+>}/arrangement/optimal", name: 'arrangement_optimal')]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Get(summary: 'Gets a settlement optimized arrangement')]
 	#[OA\Parameter(

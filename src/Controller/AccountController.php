@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-
 use App\Form\AuthorizedResetPasswordForm;
 use App\Form\CreateAccountForm;
 use App\Form\ResetPasswordForm;
@@ -16,20 +15,16 @@ use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
-#[Rest\Route('/account')]
+#[Rest\Route('/account', name: 'account_')]
 #[OA\Tag(name: 'Account')]
 #[Nelmio\Security(name: null)]
 class AccountController extends AbstractController{
-	private FormService $formService;
-	private UserService $userService;
-
 	public function __construct(
-		UserService $userService,
-		FormService $formService
-	) {
-		$this->userService = $userService;
-		$this->formService = $formService;
-	}
+		private readonly FormService $formService,
+		private readonly UserService $userService,
+		private readonly CreateAccountService $accountService,
+		private readonly ResetPasswordService $resetPasswordService,
+	) {	}
 
 	#[Rest\View(statusCode: 200)]
 	#[Rest\Post(name: 'create_account')]
@@ -59,9 +54,9 @@ class AccountController extends AbstractController{
 			type: 'string'
 		)],
 	)))]
-	public function createAccount(Request $request, CreateAccountService $service) {
+	public function createAccount(Request $request) {
 		$form = $this->formService->handle($request, CreateAccountForm::class);
-		$service->createAccount($form->getData());
+		$this->accountService->createAccount($form->getData());
 	}
 
 	#[Rest\View(statusCode: 200)]
@@ -70,11 +65,15 @@ class AccountController extends AbstractController{
 		new OA\Property(
 			property: 'email',
 			type: 'string'
+		),
+		new OA\Property(
+			property: 'captcha',
+			type: 'string'
 		)],
 	)))]
-	public function resetPassword(Request $request, ResetPasswordService $service) {
+	public function resetPassword(Request $request) {
 		$form = $this->formService->handle($request, ResetPasswordForm::class);
-		$service->resetPassword($form->getData());
+		$this->resetPasswordService->resetPassword($form->getData());
 	}
 
 	#[Rest\View(statusCode: 200)]
@@ -89,25 +88,33 @@ class AccountController extends AbstractController{
 			type: 'string'
 		)],
 	)))]
-	public function authorizedResetPassword(Request $request, ResetPasswordService $service) {
+	public function authorizedResetPassword(Request $request) {
 		$form = $this->formService->handle($request, AuthorizedResetPasswordForm::class);
-		$service->authorizedResetPassword($form->getData());
+		$this->resetPasswordService->authorizedResetPassword($form->getData());
 	}
 
-	#[Rest\Post("/resend-confirmation")]
+	#[Rest\Post("/resend-activation", name: 'resend_activation')]
 	#[Rest\RequestParam('login', description: 'Name or email of the user')]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Post(summary: 'Resend a mail with activation token')]
-	public function resendConfirmation(string $login, CreateAccountService $service) {
+	public function resendActivation(string $login) {
 		$user = $this->userService->getUserByLogin($login);
-		$service->resend($user);
+		$this->accountService->resendActivation($user);
 	}
 
-	#[Rest\Post("/confirm-email")]
+	#[Rest\Post("/activate", name: 'activate')]
+	#[Rest\RequestParam('token', description: 'Activation token sent to email')]
+	#[Rest\View(statusCode: 200)]
+	#[OA\Post(summary: 'Activate an account via token')]
+	public function activate(string $token) {
+		$this->accountService->activate($token);
+	}
+
+	#[Rest\Post("/confirm-email", name: 'confirm_email')]
 	#[Rest\RequestParam('token', description: 'Confirmation token sent to email')]
 	#[Rest\View(statusCode: 200)]
-	#[OA\Post(summary: 'Confirm account via token')]
-	public function confirmEmail(string $login, CreateAccountService $service) {
-		// TODO: Do it!
+	#[OA\Post(summary: 'Confirm an email via token')]
+	public function confirmEmail(string $token) {
+		$this->accountService->confirmEmail($token);
 	}
 }

@@ -16,13 +16,11 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
 class BearerAuthenticator extends AbstractAuthenticator {
-	private AccessTokenService $accessTokenService;
-	private UserRepository $userRepository;
 
-	public function __construct(AccessTokenService $accessTokenService, UserRepository $userRepository) {
-		$this->accessTokenService = $accessTokenService;
-		$this->userRepository = $userRepository;
-	}
+	public function __construct(
+		private readonly AccessTokenService $accessTokenService,
+		private readonly UserRepository $userRepository,
+	) {}
 
 	public function supports(Request $request): bool {
 		return $request->headers->has('Authorization');
@@ -45,9 +43,8 @@ class BearerAuthenticator extends AbstractAuthenticator {
 		}
 
 		$token = $this->accessTokenService->parseToken($apiToken);
-		/** @var string $subject */
-		$subject = $token->claims()->get("sub");
 
+		$subject = $token->claims()->get("sub");
 		return new SelfValidatingPassport(new UserBadge($subject, function ($userIdentifier) {
 			return $this->userRepository->findOneBy(['id' => $userIdentifier]);
 		}));

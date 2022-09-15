@@ -1,0 +1,10 @@
+{% extends "emails/base.html.twig" %}
+
+{% block content %}
+    <h1 id="hello">Hello {{ user.firstName }} {{ user.lastName }}!</h1>
+    <p>
+        We get request to change an email address to this.
+        If you want to do it, click <a href="{{ url }}">link</a>.
+        Otherwise, you ignore this email.
+    </p>
+{% endblock %}

@@ -11,33 +11,21 @@ use App\Repository\RefreshTokenRepository;
 use App\Service\Security\AccessTokenService;
 use App\Service\Security\RefreshTokenService;
 use DateTime;
-use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Uid\Uuid;
 
 class AuthenticationService {
-	private DeviceRepository $deviceRepository;
-	private RefreshTokenRepository $refreshTokenRepository;
-	private AccessTokenService $accessTokenService;
-	private RefreshTokenService $refreshTokenService;
-	private UserPasswordHasherInterface $passwordHasher;
-	private UserService $userService;
-
 	public function __construct(
-		EntityManagerInterface $entityManager,
-		AccessTokenService $accessTokenService,
-		RefreshTokenService $refreshTokenService,
-		UserPasswordHasherInterface $passwordHasher,
-		UserService $userService
+		private readonly DeviceRepository            $deviceRepository,
+		private readonly RefreshTokenRepository      $refreshTokenRepository,
+		private readonly AccessTokenService          $accessTokenService,
+		private readonly RefreshTokenService         $refreshTokenService,
+		private readonly UserPasswordHasherInterface $passwordHasher,
+		private readonly UserService                 $userService,
 	) {
-		$this->deviceRepository = $entityManager->getRepository(Device::class);
-		$this->refreshTokenRepository = $entityManager->getRepository(RefreshToken::class);
-		$this->accessTokenService = $accessTokenService;
-		$this->refreshTokenService = $refreshTokenService;
-		$this->passwordHasher = $passwordHasher;
-		$this->userService = $userService;
 	}
 
 	public function getRefreshToken(string $token): ?RefreshToken {
@@ -54,12 +42,18 @@ class AuthenticationService {
 	public function authenticate(string $login, string $password): User {
 		$user = $this->userService->getUserByLogin($login);
 		if ($user === null) {
-			throw new UnauthorizedHttpException('Wrong credentials', 'Wrong credentials');
+			throw new AuthenticationException('Wrong credentials');
+		}
+		if (!$user->isActivated()) {
+			throw new AuthenticationException('Not activated user');
+		}
+		if ($user->isDisabled()) {
+			throw new AuthenticationException('Disabled user');
 		}
 
 		$passwordValid = $this->passwordHasher->isPasswordValid($user, $password);
 		if (!$passwordValid) {
-			throw new UnauthorizedHttpException('Wrong credentials', 'Wrong credentials');
+			throw new AuthenticationException('Wrong credentials');
 		}
 		return $user;
 	}

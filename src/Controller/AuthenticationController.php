@@ -9,17 +9,15 @@ use Nelmio\ApiDocBundle\Annotation as Nelmio;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-#[Rest\Route('/auth')]
+#[Rest\Route('/auth', name: 'auth_')]
 #[OA\Tag(name: 'Authentication')]
 #[Nelmio\Security(name: null)]
 class AuthenticationController extends AbstractController {
-	private AuthenticationService $authenticationService;
+	public function __construct(
+		private readonly AuthenticationService $authenticationService,
+	) {	}
 
-	public function __construct(AuthenticationService $authenticationService) {
-		$this->authenticationService = $authenticationService;
-	}
-
-	#[Rest\Post("/login")]
+	#[Rest\Post("/login", name: 'login')]
 	#[Rest\RequestParam('login', description: 'Name or email of the user')]
 	#[Rest\RequestParam('password', description: 'The password in plain text')]
 	#[Rest\RequestParam('deviceUuid', description: 'UUID', nullable: true)]

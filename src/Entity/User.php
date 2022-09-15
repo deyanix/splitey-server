@@ -38,11 +38,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
 
 	#[ORM\Column(type: 'boolean')]
 	#[Serializer\Groups(["user:read"])]
-	private bool $active = true;
+	private bool $activated = false;
 
 	#[ORM\Column(type: 'boolean')]
 	#[Serializer\Groups(["user:read"])]
-	private bool $confirmed = false;
+	private bool $disabled = false;
 
 	#[ORM\ManyToMany(targetEntity: ExternalContact::class, cascade: ['persist'])]
 	#[ORM\JoinTable(
@@ -116,19 +116,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
 		return $this->username;
 	}
 
-	public function isActive(): bool {
-		return $this->active;
+	public function isActivated(): bool {
+		return $this->activated;
 	}
 
-	public function setActive(bool $active): void {
-		$this->active = $active;
+	public function setActivated(bool $activated): void {
+		$this->activated = $activated;
 	}
 
-	public function isConfirmed(): bool {
-		return $this->confirmed;
+	public function isDisabled(): bool {
+		return $this->disabled;
 	}
 
-	public function setConfirmed(bool $confirmed): void {
-		$this->confirmed = $confirmed;
+	public function setDisabled(bool $disabled): void {
+		$this->disabled = $disabled;
 	}
 }

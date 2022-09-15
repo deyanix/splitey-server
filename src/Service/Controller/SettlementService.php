@@ -12,15 +12,11 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class SettlementService {
-	private EntityManagerInterface $entityManager;
-	private SettlementRepository $settlementRepository;
-	private UserService $userService;
-
-	public function __construct(EntityManagerInterface $entityManager, UserService $userService) {
-		$this->entityManager = $entityManager;
-		$this->settlementRepository = $entityManager->getRepository(Settlement::class);
-		$this->userService = $userService;
-	}
+	public function __construct(
+		private readonly EntityManagerInterface $entityManager,
+		private readonly SettlementRepository   $settlementRepository,
+		private readonly UserService            $userService,
+	) {	}
 
 	public function getUserSettlements(int $offset, int $length): array {
 		return $this->settlementRepository->findByUser($this->userService->getCurrentUser(), $offset, $length);

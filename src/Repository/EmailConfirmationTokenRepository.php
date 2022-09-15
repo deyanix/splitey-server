@@ -2,12 +2,12 @@
 
 namespace App\Repository;
 
-use App\Entity\ResetPassword;
+use App\Entity\EmailConfirmationToken;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-class ResetPasswordRepository extends ServiceEntityRepository {
+class EmailConfirmationTokenRepository extends ServiceEntityRepository {
 	public function __construct(ManagerRegistry $registry) {
-		parent::__construct($registry, ResetPassword::class);
+		parent::__construct($registry, EmailConfirmationToken::class);
 	}
 }
