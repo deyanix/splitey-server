@@ -1,0 +1,12 @@
+{% extends "emails/base.html.twig" %}
+
+{% block content %}
+    <h1 id="hello">Hello {{ user.firstName }} {{ user.lastName }}!</h1>
+    <p>
+        We are pleased to welcome you! If you want complete registration, visit link {{ url }}
+    </p>
+    <p>
+        Have a nice usage of application<br/>
+        Splitey Team
+    </p>
+{% endblock %}

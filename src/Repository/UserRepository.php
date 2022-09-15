@@ -20,7 +20,9 @@ class UserRepository extends ServiceEntityRepository {
 	public function findByUsernameOrEmail(string $value): ?User {
 		try {
 			return $this->createQueryBuilder('u')
+				->where('u.active = :active')
 				->andWhere('u.email = :value OR u.username = :value')
+				->setParameter('active', true)
 				->setParameter('value', $value)
 				->setMaxResults(1)
 				->getQuery()

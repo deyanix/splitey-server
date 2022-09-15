@@ -2,33 +2,27 @@
 
 namespace App\Controller;
 
-use App\Entity\Settlement;
-use App\Entity\SettlementMember;
-use App\Entity\User;
-use App\Exception\EntityNotFoundException;
-use App\Exception\FormValidationException;
 use App\Form\SettlementForm;
 use App\Repository\SettlementRepository;
-use App\Service\SettlementService;
-use Doctrine\ORM\EntityManagerInterface;
-use Exception;
+use App\Service\Controller\SettlementService;
+use App\Service\FormService;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 #[Rest\Route('/settlements')]
 #[OA\Tag(name: 'Settlement')]
 class SettlementController extends AbstractController {
-	private FormFactoryInterface $formFactory;
-	private EntityManagerInterface $entityManager;
+	private FormService $formService;
+	private SettlementService $settlementService;
 
-	public function __construct(FormFactoryInterface $formFactory, EntityManagerInterface $entityManager) {
-		$this->formFactory = $formFactory;
-		$this->entityManager = $entityManager;
+	public function __construct(
+		SettlementService $settlementService,
+		FormService $formService
+	) {
+		$this->formService = $formService;
+		$this->settlementService = $settlementService;
 	}
 
 	#[Rest\Get]
@@ -48,17 +42,15 @@ class SettlementController extends AbstractController {
 		in: 'query',
 		schema: new OA\Schema(type: 'integer')
 	)]
-	public function getAll(int $offset, int $length, SettlementRepository $repository) {
-		return [
-			'data' => $repository->findByUser($this->getUser(), $offset, $length)
-		];
+	public function getAll(int $offset, int $length) {
+		return $this->settlementService->getUserSettlements($offset, $length);
 	}
 
 	#[Rest\Get("/{id<\d+>}")]
 	#[Rest\View(statusCode: 200, serializerGroups: ["settlement:read", "settlement_member:read"])]
 	#[OA\Get(summary: 'Get a settlement')]
-	public function get(int $id, SettlementRepository $repository) {
-		return $repository->findOneByUser($id, $this->getUser());
+	public function get(int $id) {
+		return $this->settlementService->getUserSettlement($id);
 	}
 
 	#[Rest\Post]
@@ -70,23 +62,8 @@ class SettlementController extends AbstractController {
 		)]
 	)))]
 	public function create(Request $request) {
-		$form = $this->formFactory->create(SettlementForm::class);
-
-		$form->submit($request->request->all());
-		if (!$form->isValid()) {
-			throw new FormValidationException($form);
-		}
-
-		$settlement = $form->getData();
-		$member = new SettlementMember();
-		$member->setUser($this->getUser());
-		$member->setSettlement($settlement);
-		$settlement->getMembers()->add($member);
-
-		$this->entityManager->persist($settlement);
-		$this->entityManager->persist($member);
-		$this->entityManager->flush();
-		return $form->getData();
+		$form = $this->formService->handle($request, SettlementForm::class);
+		return $this->settlementService->createSettlement($form->getData());
 	}
 
 	#[Rest\Put("/{id<\d+>}")]
@@ -97,57 +74,27 @@ class SettlementController extends AbstractController {
 			type: 'string'
 		)]
 	)))]
-	public function update(int $id, Request $request,  SettlementRepository $repository) {
-		$settlement = $repository->findOneByUser($id, $this->getUser());
-		if ($settlement === null) {
-			throw new EntityNotFoundException('Not found entity');
-		}
-		$form = $this->formFactory->create(SettlementForm::class, $settlement);
-
-		$form->submit($request->request->all());
-		if (!$form->isValid()) {
-			throw new FormValidationException($form);
-		}
-
-		$this->entityManager->persist($form->getData());
-		$this->entityManager->flush();
-		return $form->getData();
+	public function update(int $id, Request $request) {
+		$settlement = $this->settlementService->getUserSettlement($id);
+		$form = $this->formService->handle($request, SettlementForm::class, $settlement);
+		return $this->settlementService->updateSettlement($form->getData());
 	}
 
 	#[Rest\Delete("/{id<\d+>}")]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Delete(summary: 'Delete a settlement')]
 	public function delete(int $id, SettlementRepository $repository) {
-		$settlement = $repository->findOneByUser($id, $this->getUser());
-		if ($settlement === null) {
-			throw new NotFoundHttpException('Not found entity');
-		}
-
-		$this->entityManager->remove($settlement);
-		$this->entityManager->flush();
+		$settlement = $this->settlementService->getUserSettlement($id);
+		$this->settlementService->deleteSettlement($settlement);
 	}
 
 	#[Rest\Put("/{id<\d+>}/members/user")]
 	#[Rest\RequestParam('userId', requirements: '\d+', nullable: true)]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Put(summary: 'Add a member to settlement')]
-	public function addUserMember(int $id, int $userId, SettlementRepository $repository) {
-		$settlement = $repository->findOneByUser($id, $this->getUser());
-		if ($settlement === null) {
-			throw new EntityNotFoundException('Not found entity');
-		}
-
-		$user = $this->entityManager->getReference(User::class, $userId);
-		if ($repository->isSettlementMember($id, $user)) {
-			throw new EntityNotFoundException('User is this settlement\'s member');
-		}
-
-		$member = new SettlementMember();
-		$member->setUser($user);
-		$member->setSettlement($settlement);
-
-		$this->entityManager->persist($settlement);
-		$this->entityManager->flush();
+	public function addUserMember(int $id, int $userId) {
+		$settlement = $this->settlementService->getUserSettlement($id);
+		$this->settlementService->addUserMember($settlement, $userId);
 	}
 
 	#[Rest\Get("/{id<\d+>}/summary")]
@@ -179,8 +126,8 @@ class SettlementController extends AbstractController {
 		in: 'path',
 		schema: new OA\Schema(type: 'integer')
 	)]
-	public function summary(int $id, SettlementRepository $repository): array {
-		return ['data' => $repository->getSummary($id)];
+	public function summary(int $id): array {
+		return ['data' => $this->settlementService->getSummary($id)];
 	}
 
 	#[Rest\Get("/{id<\d+>}/arrangement")]
@@ -192,9 +139,8 @@ class SettlementController extends AbstractController {
 		in: 'path',
 		schema: new OA\Schema(type: 'integer')
 	)]
-	public function arrangement(int $id, SettlementRepository $repository): array {
-
-		return ['data' => $repository->getArrangement($id)];
+	public function arrangement(int $id): array {
+		return ['data' => $this->settlementService->getArrangement($id)];
 	}
 
 	#[Rest\Get("/{id<\d+>}/arrangement/optimal")]
@@ -206,8 +152,7 @@ class SettlementController extends AbstractController {
 		in: 'path',
 		schema: new OA\Schema(type: 'integer')
 	)]
-	public function arrangementOptimal(int $id, SettlementService $service): array {
-
-		return ['data' => $service->getArrangement($id)];
+	public function arrangementOptimal(int $id): array {
+		return ['data' => $this->settlementService->getOptimizedArrangement($id)];
 	}
 }

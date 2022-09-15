@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Settlement;
 
 use App\Model\SettlementArrangementItem;
 use App\Model\SettlementSummaryItem;

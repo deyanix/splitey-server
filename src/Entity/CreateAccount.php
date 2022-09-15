@@ -2,12 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\ResetPasswordRepository;
+use App\Repository\CreateAccountRepository;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ResetPasswordRepository::class)]
-class ResetPassword {
+#[ORM\Entity(repositoryClass: CreateAccountRepository::class)]
+class CreateAccount {
 	#[ORM\Id]
 	#[ORM\GeneratedValue]
 	#[ORM\Column(type: 'integer', options: ['unsigned' => true])]

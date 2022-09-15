@@ -36,6 +36,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
 	#[Serializer\Groups(["user:read"])]
 	private string $lastName;
 
+	#[ORM\Column(type: 'boolean')]
+	#[Serializer\Groups(["user:read"])]
+	private bool $active = true;
+
+	#[ORM\Column(type: 'boolean')]
+	#[Serializer\Groups(["user:read"])]
+	private bool $confirmed = false;
+
 	#[ORM\ManyToMany(targetEntity: ExternalContact::class, cascade: ['persist'])]
 	#[ORM\JoinTable(
 		name: "user_external_contact",
@@ -106,5 +114,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
 
 	public function getUserIdentifier(): string {
 		return $this->username;
+	}
+
+	public function isActive(): bool {
+		return $this->active;
+	}
+
+	public function setActive(bool $active): void {
+		$this->active = $active;
+	}
+
+	public function isConfirmed(): bool {
+		return $this->confirmed;
+	}
+
+	public function setConfirmed(bool $confirmed): void {
+		$this->confirmed = $confirmed;
 	}
 }

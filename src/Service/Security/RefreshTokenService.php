@@ -4,7 +4,7 @@ namespace App\Service\Security;
 
 use App\Entity\Device;
 use App\Entity\RefreshToken;
-use App\Entity\User;
+use App\Service\RandomizerService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -82,10 +82,10 @@ class RefreshTokenService {
 
 	private function createRandomString(): string {
 		try {
-			return bin2hex($this->randomizerService->getRandomBytes(32));
+			return bin2hex($this->randomizerService->getBytes(32));
 		} catch (Exception) {
 			$this->logger->warning('Unable to created random binary bytes.');
 		}
-		return $this->randomizerService->getRandomString(64);
+		return $this->randomizerService->getString(64);
 	}
 }

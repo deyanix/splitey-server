@@ -49,7 +49,7 @@ class BearerAuthenticator extends AbstractAuthenticator {
 		$subject = $token->claims()->get("sub");
 
 		return new SelfValidatingPassport(new UserBadge($subject, function ($userIdentifier) {
-			return $this->userRepository->findOneBy(['username' => $userIdentifier]);
+			return $this->userRepository->findOneBy(['id' => $userIdentifier]);
 		}));
 	}
 

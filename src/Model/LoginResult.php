@@ -10,6 +10,7 @@ class LoginResult {
 	private string $accessToken;
 	private string $refreshToken;
 	private DateTimeInterface $refreshTokenExpirationDate;
+	private string $deviceUuid;
 
 	public function getAccessToken(): string {
 		return $this->accessToken;
@@ -33,5 +34,13 @@ class LoginResult {
 
 	public function setRefreshTokenExpirationDate(DateTimeInterface $refreshTokenExpirationDate): void {
 		$this->refreshTokenExpirationDate = $refreshTokenExpirationDate;
+	}
+
+	public function getDeviceUuid(): string {
+		return $this->deviceUuid;
+	}
+
+	public function setDeviceUuid(string $deviceUuid): void {
+		$this->deviceUuid = $deviceUuid;
 	}
 }

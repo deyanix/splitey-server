@@ -2,6 +2,7 @@
 
 namespace App\Service\Security;
 
+use App\Entity\User;
 use DateTimeImmutable;
 use DateTimeZone;
 use Lcobucci\Clock\SystemClock;
@@ -48,19 +49,22 @@ class AccessTokenService {
 	/**
 	 * Creates the access token with matching valid data.
 	 *
-	 * @param string $username The user for whom the token is being issued.
+	 * @param User $user The user for whom the token is being issued.
 	 *
 	 * @return Token\Plain The JWT token.
 	 */
-	public function createToken(string $username): Token\Plain {
+	public function createToken(User $user): Token\Plain {
 		$now = new DateTimeImmutable();
 		return $this->getConfiguration()->builder()
 			->issuedBy($this->host)
 			->permittedFor($this->host)
 			->identifiedBy($_ENV['JWT_ID'])
 			->issuedAt($now)
-			->relatedTo($username)
+			->relatedTo($user->getId())
 			->canOnlyBeUsedAfter($now)
+			->withClaim('first_name', $user->getFirstName())
+			->withClaim('last_name', $user->getLastName())
+			->withClaim('username', $user->getUsername())
 			->withClaim('roles', ['ROLE_USER'])
 			->expiresAt($now->modify('+24 hours'))
 			->getToken($this->getConfiguration()->signer(), $this->getConfiguration()->signingKey());
