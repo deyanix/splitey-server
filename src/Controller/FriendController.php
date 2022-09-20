@@ -3,16 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\FriendInvitationStatus;
+use App\Form\DeleteFriendForm;
 use App\Form\FriendInvitationForm;
-use App\Model\Form\ExternalFriendData;
+use App\Model\Form\DeleteFriendData;
 use App\Model\Form\FriendInvitationData;
-use App\Model\PaginationData;
-use App\Repository\FriendRepository;
 use App\Service\Controller\FriendInvitationService;
 use App\Service\Controller\FriendService;
 use App\Service\FormService;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use Nelmio\ApiDocBundle\Annotation as Nelmio;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,11 +32,33 @@ class FriendController extends AbstractController {
 		return $this->friendService->getFriends();
 	}
 
-	#[Rest\Get(path: '/invitations', name: 'get_initivations')]
+	#[Rest\Delete(name: 'delete')]
+	#[Rest\View(statusCode: 200)]
+	#[OA\Delete(
+		summary: 'Delete a friend',
+		requestBody: new OA\RequestBody(
+			content: new OA\JsonContent(
+				ref: new Model(type: DeleteFriendData::class)
+			)
+		)
+	)]
+	public function deleteFriend(Request $request) {
+		$form = $this->formService->handle($request, DeleteFriendForm::class);
+		$this->friendService->deleteFriend($form->getData());
+	}
+
+	#[Rest\Get(path: '/invitations', name: 'get_invitations')]
 	#[Rest\View(statusCode: 200, serializerGroups: ['friend_invitation:read', 'user:minimal'])]
 	#[OA\Get(summary: 'Get unanswered invitations')]
 	public function getIntivations() {
 		return $this->invitationService->getInvitations();
+	}
+
+	#[Rest\Get(path: '/invitations/sent', name: 'get_sent_invitations')]
+	#[Rest\View(statusCode: 200, serializerGroups: ['friend_invitation:read', 'user:minimal'])]
+	#[OA\Get(summary: 'Get sent invitations')]
+	public function getSentIntivations() {
+		return $this->invitationService->getSentInvitations();
 	}
 
 	#[Rest\Post(path: '/invitations', name: 'invite')]
@@ -56,10 +76,24 @@ class FriendController extends AbstractController {
 		$this->invitationService->invite($form->getData());
 	}
 
-	#[Rest\Post(path: '/invitations/answer', name: 'invite_answer')]
+	#[Rest\Post(path: '/invitations/{id<\d+>}/accept', name: 'accept_invitation')]
 	#[Rest\View(statusCode: 200)]
-	#[OA\Post(summary: 'Answer to invitation to friendship')]
-	public function inviteAnswer() {
-		return []; // TODO: Do it!
+	#[OA\Post(summary: 'Accept invitation to friendship')]
+	public function acceptInvitation(int $id) {
+		$this->invitationService->answer($id, true);
+	}
+
+	#[Rest\Post(path: '/invitations/{id<\d+>}/decline', name: 'decline_invitation')]
+	#[Rest\View(statusCode: 200)]
+	#[OA\Post(summary: 'Decline invitation to friendship')]
+	public function declineInvitation(int $id) {
+		$this->invitationService->answer($id, false);
+	}
+
+	#[Rest\Post(path: '/invitations/see', name: 'see_invitations')]
+	#[Rest\View(statusCode: 200)]
+	#[OA\Post(summary: 'See all invitations to friendship')]
+	public function seeInvitations() {
+		$this->invitationService->see();
 	}
 }

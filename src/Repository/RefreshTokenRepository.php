@@ -7,9 +7,7 @@ use App\Entity\RefreshToken;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Exception\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\Validator\Constraints\DateTime;
 
 class RefreshTokenRepository extends ServiceEntityRepository {
 	public function __construct(ManagerRegistry $registry) {

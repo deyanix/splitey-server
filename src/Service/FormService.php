@@ -17,7 +17,9 @@ class FormService {
 	public function handle(Request $request, string $class, mixed $default = null): FormInterface {
 		$form = $this->formFactory->create($class, $default);
 
+		$form->submit($request->query->all());
 		$form->submit($request->request->all());
+		$form->submit($request->files->all());
 		if (!$form->isValid()) {
 			throw new FormValidationException($form);
 		}

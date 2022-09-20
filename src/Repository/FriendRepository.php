@@ -7,7 +7,6 @@ use App\Entity\User;
 use App\Model\CommonFriend;
 use App\Repository\Helper\QueryHelperTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 class FriendRepository extends ServiceEntityRepository {
@@ -17,10 +16,10 @@ class FriendRepository extends ServiceEntityRepository {
 		parent::__construct($registry, Friend::class);
 	}
 
-	public function hasUserFriend(User $user1, User $user2): bool {
+	public function getUserFriend(User $user1, User $user2): ?Friend {
 		$qb = $this->createQueryBuilder('f');
 		return $qb
-			->select('1')
+			->select('f')
 			->where(
 				$qb->expr()->orX(
 					$qb->expr()->andX(
@@ -34,7 +33,7 @@ class FriendRepository extends ServiceEntityRepository {
 			->setParameter('user1', $user1)
 			->setParameter('user2', $user2)
 			->getQuery()
-			->getOneOrNullResult() === 1;
+			->getOneOrNullResult();
 	}
 
 	public function getUserFriends(User $user): array {

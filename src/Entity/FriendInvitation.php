@@ -27,10 +27,13 @@ class FriendInvitation {
 	#[Serializer\Groups(["friend_invitation:read"])]
 	private DateTime $date;
 
-	#[ORM\Column(type: 'smallint', enumType: FriendInvitationStatus::class, options: ['unsigned' => true])]
-	#[Serializer\Type("Enum")]
+	#[ORM\Column(type: 'boolean')]
 	#[Serializer\Groups(["friend_invitation:read"])]
-	private FriendInvitationStatus $status = FriendInvitationStatus::PENDING;
+	private bool $active = true;
+
+	#[ORM\Column(type: 'boolean')]
+	#[Serializer\Groups(["friend_invitation:read"])]
+	private bool $seen = true;
 
 	public function getId(): int {
 		return $this->id;
@@ -64,11 +67,19 @@ class FriendInvitation {
 		$this->date = $date;
 	}
 
-	public function getStatus(): FriendInvitationStatus {
-		return $this->status;
+	public function isActive(): bool {
+		return $this->active;
 	}
 
-	public function setStatus(FriendInvitationStatus $status): void {
-		$this->status = $status;
+	public function setActive(bool $active): void {
+		$this->active = $active;
+	}
+
+	public function isSeen(): bool {
+		return $this->seen;
+	}
+
+	public function setSeen(bool $seen): void {
+		$this->seen = $seen;
 	}
 }

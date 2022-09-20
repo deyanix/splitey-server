@@ -7,7 +7,6 @@ use App\Model\Form\ExternalFriendData;
 use App\Service\Controller\ExternalFriendService;
 use App\Service\FormService;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use Nelmio\ApiDocBundle\Annotation as Nelmio;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -67,17 +66,18 @@ class ExternalFriendController extends AbstractController {
 		$this->externalFriendService->delete($friend);
 	}
 
-	#[Rest\Post(path: '/{id<\d+>}/link', name: 'link')]
-	#[Rest\View(statusCode: 200)]
-	#[OA\Post(summary: 'Link an external friend to another external friend')]
-	public function link() {
-		return []; // TODO: Do it! Remember about link source (e.g. settlement member)
-	}
-
-	#[Rest\Delete(path: '/{id<\d+>}/link', name: 'delete_link')]
-	#[Rest\View(statusCode: 200)]
-	#[OA\Delete(summary: 'Delete link to external friend')]
-	public function deleteLink() {
-		return []; // TODO: Do it! Remember about link source (e.g. settlement member)
-	}
+	// TODO: External friend linking. Remember about link source (e.g. settlement member)
+//	#[Rest\Post(path: '/{id<\d+>}/link', name: 'link')]
+//	#[Rest\View(statusCode: 200)]
+//	#[OA\Post(summary: 'Link an external friend to another external friend')]
+//	public function link() {
+//		return [];
+//	}
+//
+//	#[Rest\Delete(path: '/{id<\d+>}/link', name: 'delete_link')]
+//	#[Rest\View(statusCode: 200)]
+//	#[OA\Delete(summary: 'Delete link to external friend')]
+//	public function deleteLink() {
+//		return [];
+//	}
 }

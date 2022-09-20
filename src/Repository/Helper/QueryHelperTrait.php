@@ -4,7 +4,6 @@ namespace App\Repository\Helper;
 
 use Doctrine\DBAL\Statement;
 use Doctrine\ORM\NativeQuery;
-use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\ResultSetMapping;
 
 trait QueryHelperTrait {

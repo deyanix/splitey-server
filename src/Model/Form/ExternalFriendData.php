@@ -3,8 +3,8 @@
 namespace App\Model\Form;
 
 use App\Entity\ExternalFriend;
-use Symfony\Component\Validator\Constraints as Assert;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class ExternalFriendData {
 	public static function fromEntity(ExternalFriend $entity): ExternalFriendData {
