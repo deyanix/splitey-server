@@ -20,7 +20,7 @@ class SettlementController extends AbstractController {
 	) { }
 
 	#[Rest\Get(name: 'get_all')]
-	#[Rest\View(statusCode: 200, serializerGroups: ["settlement:minimal:read"])]
+	#[Rest\View(statusCode: 200, serializerGroups: ["pagination_result", "settlement:minimal:read"])]
 	#[Rest\QueryParam('offset', requirements: '\d+', default: 0)]
 	#[Rest\QueryParam('length', requirements: '\d+', default: 20)]
 	#[OA\Get(summary: 'Get user\'s settlements')]
@@ -125,6 +125,7 @@ class SettlementController extends AbstractController {
 	}
 
 	#[Rest\Get("/{id<\d+>}/arrangement", name: 'arrangement')]
+	#[Rest\QueryParam('optimized', default: false)]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Get(summary: 'Gets a settlement arrangement')]
 	#[OA\Parameter(
@@ -133,20 +134,16 @@ class SettlementController extends AbstractController {
 		in: 'path',
 		schema: new OA\Schema(type: 'integer')
 	)]
-	public function arrangement(int $id): array {
-		return ['data' => $this->settlementService->getArrangement($id)];
-	}
-
-	#[Rest\Get("/{id<\d+>}/arrangement/optimal", name: 'arrangement_optimal')]
-	#[Rest\View(statusCode: 200)]
-	#[OA\Get(summary: 'Gets a settlement optimized arrangement')]
 	#[OA\Parameter(
-		name: 'id',
-		description: 'Identifier of the settlement',
-		in: 'path',
-		schema: new OA\Schema(type: 'integer')
+		name: 'optimized',
+		description: 'If true, returns optimized arrangement',
+		in: 'query',
+		schema: new OA\Schema(type: 'boolean')
 	)]
-	public function arrangementOptimal(int $id): array {
-		return ['data' => $this->settlementService->getOptimizedArrangement($id)];
+	public function arrangement(int $id, string $optimized): array {
+		if ($optimized === 'true') {
+			return ['data' => $this->settlementService->getOptimizedArrangement($id)];
+		}
+		return ['data' => $this->settlementService->getArrangement($id)];
 	}
 }

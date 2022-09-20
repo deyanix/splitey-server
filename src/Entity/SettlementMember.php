@@ -21,9 +21,9 @@ class SettlementMember {
 	#[ORM\JoinColumn(name: "user_id", referencedColumnName: 'id', nullable: true)]
 	private ?User $user = null;
 
-	#[ORM\ManyToOne(targetEntity: ExternalContact::class, cascade: ['persist'])]
-	#[ORM\JoinColumn(name: "external_contact_id", referencedColumnName: 'id', nullable: true)]
-	private ?ExternalContact $externalContact = null;
+	#[ORM\ManyToOne(targetEntity: ExternalFriend::class, cascade: ['persist'])]
+	#[ORM\JoinColumn(name: "external_friend_id", referencedColumnName: 'id', nullable: true)]
+	private ?ExternalFriend $externalFriend = null;
 
 	public function getId(): int {
 		return $this->id;
@@ -51,40 +51,40 @@ class SettlementMember {
 		$this->user = $user;
 	}
 
-	public function getExternalContact(): ?ExternalContact {
-		return $this->externalContact;
+	public function getExternalFriend(): ?ExternalFriend {
+		return $this->externalFriend;
 	}
 
 	#[Serializer\VirtualProperty]
 	#[Serializer\Groups(["settlement_member:read"])]
 	public function getExternalContactId(): ?int {
-		return $this->getExternalContact()?->getId();
+		return $this->getExternalFriend()?->getId();
 	}
 
-	public function setExternalContact(?ExternalContact $externalContact): void {
-		$this->externalContact = $externalContact;
+	public function setExternalFriend(?ExternalFriend $externalFriend): void {
+		$this->externalFriend = $externalFriend;
 	}
 
 	#[Serializer\VirtualProperty]
 	#[Serializer\Groups(["settlement_member:read"])]
 	public function getFirstName(): ?string {
-		return $this->getUser()?->getFirstName() ?? $this->getExternalContact()?->getFirstName();
+		return $this->getUser()?->getFirstName() ?? $this->getExternalFriend()?->getFirstName();
 	}
 
 	#[Serializer\VirtualProperty]
 	#[Serializer\Groups(["settlement_member:read"])]
 	public function getLastName(): ?string {
-		return $this->getUser()?->getLastName() ?? $this->getExternalContact()?->getLastName();
+		return $this->getUser()?->getLastName() ?? $this->getExternalFriend()?->getLastName();
 	}
 
 	#[Serializer\VirtualProperty]
 	#[Serializer\Groups(["settlement_member:read"])]
-	public function getType(): ?string {
+	public function getType(): ?SettlementMemberType {
 		if ($this->getUser()) {
-			return 'user';
+			return SettlementMemberType::USER;
 		}
-		if ($this->getExternalContact()) {
-			return 'external_contact';
+		if ($this->getExternalFriend()) {
+			return SettlementMemberType::EXTERNAL_FRIEND;
 		}
 		return null;
 	}

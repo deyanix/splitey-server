@@ -29,7 +29,7 @@ services:
         arguments:
             $host: '@=service("request_stack").getCurrentRequest().getHost()'
 
-    App\Serializer\RelationsHandler:
+    App\Serializer\RelationHandler:
         arguments:
             - '@doctrine.orm.entity_manager'
         tags:
@@ -38,3 +38,9 @@ services:
             - { name: jms_serializer.handler, type: Relation<?>, direction: serialization, format: json, method: serializeRelation}
             - { name: jms_serializer.handler, type: Relation<?>, direction: deserialization, format: json, method: deserializeRelation}
 
+#    App\Serializer\EnumHandler:
+#        tags:
+#            - { name: jms_serializer.handler, type: Enum, direction: serialization, format: json, method: serializeEnum}
+#            - { name: jms_serializer.handler, type: Enum, direction: deserialization, format: json, method: deserializeEnum}
+#            - { name: jms_serializer.handler, type: Enum<?>, direction: serialization, format: json, method: serializeEnum}
+#            - { name: jms_serializer.handler, type: Enum<?>, direction: deserialization, format: json, method: deserializeEnum}

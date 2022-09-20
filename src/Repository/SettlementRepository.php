@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Settlement;
 use App\Entity\User;
+use App\Model\PaginationResult;
 use App\Model\SettlementArrangementItem;
 use App\Model\SettlementSummaryItem;
 use App\Repository\Helper\QueryHelperTrait;
@@ -18,22 +19,22 @@ class SettlementRepository extends ServiceEntityRepository {
 		parent::__construct($registry, Settlement::class);
 	}
 
-	public function findByUser(User $user, int $offset, int $length): array {
+	public function findByUser(User $user, int $offset, int $length): PaginationResult {
 		$rsm = new Query\ResultSetMappingBuilder($this->getEntityManager());
 		$rsm->addRootEntityFromClassMetadata(Settlement::class, 's');
 
 		$rsmTotal = new Query\ResultSetMappingBuilder($this->getEntityManager());
 		$rsmTotal->addScalarResult('total', 'total', 'integer');
 
-		$query = $this->prepareNativeQuery('Search', $rsm)
+		$query = $this->prepareNativeQuery('Settlement/Search', $rsm)
 			->setParameter('user_id', $user->getId())
 			->setParameter('offset', $offset)
 			->setParameter('length', $length);
 
-		return [
-			'rows' => $query->getResult(),
-			'total' => $query->setResultSetMapping($rsmTotal)->getResult()[0]['total'] ?? 0
-		];
+		$result = new PaginationResult();
+		$result->setRows($query->getResult());
+		$result->setTotal($query->setResultSetMapping($rsmTotal)->getResult()[0]['total'] ?? 0);
+		return $result;
 	}
 
 	public function findOneByUser(int $id, User $user): ?Settlement {

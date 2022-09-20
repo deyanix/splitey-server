@@ -14,13 +14,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
 	#[ORM\Id]
 	#[ORM\GeneratedValue]
 	#[ORM\Column(type: 'integer', options: ['unsigned' => true])]
-	#[Serializer\Groups(["user:read"])]
+	#[Serializer\Groups(["user:read", "user:minimal"])]
 	private int $id;
 
 	#[ORM\Column(type: 'string', length: 31, unique: true)]
-	#[Serializer\Groups(["user:read"])]
+	#[Serializer\Groups(["user:read", "user:minimal"])]
 	private string $username;
 
+	#[Serializer\Exclude]
 	#[ORM\Column(type: 'string', length: 95)]
 	private string $password;
 
@@ -29,11 +30,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
 	private string $email;
 
 	#[ORM\Column(type: 'string', length: 31)]
-	#[Serializer\Groups(["user:read"])]
+	#[Serializer\Groups(["user:read", "user:minimal"])]
 	private string $firstName;
 
 	#[ORM\Column(type: 'string', length: 63)]
-	#[Serializer\Groups(["user:read"])]
+	#[Serializer\Groups(["user:read", "user:minimal"])]
 	private string $lastName;
 
 	#[ORM\Column(type: 'boolean')]
@@ -43,22 +44,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
 	#[ORM\Column(type: 'boolean')]
 	#[Serializer\Groups(["user:read"])]
 	private bool $disabled = false;
-
-	#[ORM\ManyToMany(targetEntity: ExternalContact::class, cascade: ['persist'])]
-	#[ORM\JoinTable(
-		name: "user_external_contact",
-		joinColumns: [new ORM\JoinColumn(name: "user_id", referencedColumnName: "id")],
-		inverseJoinColumns: [new ORM\JoinColumn(name: "external_contact_id", referencedColumnName: "id")]
-	)]
-	private Collection $externalContacts;
-
-	#[ORM\ManyToMany(targetEntity: User::class, cascade: ['persist'])]
-	#[ORM\JoinTable(
-		name: "user_internal_contact",
-		joinColumns: [new ORM\JoinColumn(name: "user_id", referencedColumnName: "id")],
-		inverseJoinColumns: [new ORM\JoinColumn(name: "contact_user_id", referencedColumnName: "id")]
-	)]
-	private Collection $internalContacts;
 
 	public function getId(): int {
 		return $this->id;

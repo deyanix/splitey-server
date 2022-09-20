@@ -77,7 +77,10 @@ class AuthenticationService {
 		$loginResult->setAccessToken($accessToken->toString());
 		$loginResult->setRefreshToken($refreshToken->getToken());
 		$loginResult->setRefreshTokenExpirationDate($refreshToken->getExpirationDate());
-		$loginResult->setDeviceUuid($device->getUuid()->toRfc4122());
+		if ($rememberMe) {
+			$loginResult->setDeviceUuid($device->getUuid()->toRfc4122());
+		}
+
 		return $loginResult;
 	}
 
@@ -94,7 +97,10 @@ class AuthenticationService {
 		$loginResult->setAccessToken($accessToken->toString());
 		$loginResult->setRefreshToken($refreshToken->getToken());
 		$loginResult->setRefreshTokenExpirationDate($refreshToken->getExpirationDate());
-		$loginResult->setDeviceUuid($token->getDevice()->getUuid());
+		if ($token->isRememberMe()) {
+			$loginResult->setDeviceUuid($token->getDevice()->getUuid()->toRfc4122());
+		}
+
 		return $loginResult;
 	}
 

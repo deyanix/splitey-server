@@ -59,6 +59,10 @@ class UserService {
 			throw new BadRequestException('User has already this address email');
 		}
 
+		if ($this->getUserByEmail($email) !== null) {
+			throw new BadRequestException('An account with this email address already exists');
+		}
+
 		$token = $this->emailConfirmationService->createToken($this->getCurrentUser(), $email);
 		$this->entityManager->persist($token);
 		$this->sendConfirmationMail($token, $email);

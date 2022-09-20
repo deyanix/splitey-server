@@ -6,6 +6,7 @@ use App\Entity\Settlement;
 use App\Entity\SettlementMember;
 use App\Entity\User;
 use App\Exception\EntityNotFoundException;
+use App\Model\PaginationResult;
 use App\Repository\SettlementRepository;
 use App\Service\Settlement\SettlementArrangementOptimizer;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,7 +19,7 @@ class SettlementService {
 		private readonly UserService            $userService,
 	) {	}
 
-	public function getUserSettlements(int $offset, int $length): array {
+	public function getUserSettlements(int $offset, int $length): PaginationResult {
 		return $this->settlementRepository->findByUser($this->userService->getCurrentUser(), $offset, $length);
 	}
 
