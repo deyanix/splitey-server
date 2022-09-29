@@ -82,15 +82,6 @@ class SettlementController extends AbstractController {
 		$this->settlementService->deleteSettlement($settlement);
 	}
 
-	#[Rest\Put("/{id<\d+>}/members/user", name: 'add_user_member')]
-	#[Rest\RequestParam('userId', requirements: '\d+', nullable: true)]
-	#[Rest\View(statusCode: 200)]
-	#[OA\Put(summary: 'Add a member to settlement')]
-	public function addUserMember(int $id, int $userId) {
-		$settlement = $this->settlementService->getUserSettlement($id);
-		$this->settlementService->addUserMember($settlement, $userId);
-	}
-
 	#[Rest\Get("/{id<\d+>}/summary", name: 'summary')]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Get(summary: 'Gets a settlement summary')]

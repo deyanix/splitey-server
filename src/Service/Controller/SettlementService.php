@@ -4,13 +4,11 @@ namespace App\Service\Controller;
 
 use App\Entity\Settlement;
 use App\Entity\SettlementMember;
-use App\Entity\User;
 use App\Exception\EntityNotFoundException;
 use App\Model\PaginationResult;
 use App\Repository\SettlementRepository;
 use App\Service\Settlement\SettlementArrangementOptimizer;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class SettlementService {
 	public function __construct(
@@ -51,24 +49,6 @@ class SettlementService {
 
 	public function deleteSettlement(Settlement $settlement): void {
 		$this->entityManager->remove($settlement);
-		$this->entityManager->flush();
-	}
-
-	public function hasMember(Settlement $settlement, User $user): bool {
-		return $this->settlementRepository->isSettlementMember($settlement->getId(), $user);
-	}
-
-	public function addUserMember(Settlement $settlement, int $userId): void {
-		$user = $this->entityManager->getReference(User::class, $userId);
-		if ($this->hasMember($settlement, $user)) {
-			throw new BadRequestException('User is this settlement\'s member');
-		}
-
-		$member = new SettlementMember();
-		$member->setUser($user);
-		$member->setSettlement($settlement);
-
-		$this->entityManager->persist($settlement);
 		$this->entityManager->flush();
 	}
 

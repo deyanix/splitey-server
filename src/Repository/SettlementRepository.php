@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\ExternalFriend;
 use App\Entity\Settlement;
 use App\Entity\User;
 use App\Model\PaginationResult;
@@ -9,6 +10,7 @@ use App\Model\SettlementArrangementItem;
 use App\Model\SettlementSummaryItem;
 use App\Repository\Helper\QueryHelperTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -49,7 +51,7 @@ class SettlementRepository extends ServiceEntityRepository {
 			->getOneOrNullResult();
 	}
 
-	public function isSettlementMember(int $id, User $user): bool {
+	public function isUserMember(int $id, User $user): bool {
 		return $this->createQueryBuilder('s')
 			->select('1')
 			->innerJoin('s.members', 'sm', '')
@@ -59,7 +61,20 @@ class SettlementRepository extends ServiceEntityRepository {
 			->setParameter('user', $user)
 			->setMaxResults(1)
 			->getQuery()
-			->getSingleScalarResult() === 1;
+			->getOneOrNullResult(AbstractQuery::HYDRATE_SINGLE_SCALAR) === 1;
+	}
+
+	public function isExternalFriendMember(int $id, ExternalFriend $friend): bool {
+		return $this->createQueryBuilder('s')
+				->select('1')
+				->innerJoin('s.members', 'sm', '')
+				->where('s.id = :id')
+				->andWhere('sm.externalFriend = :friend')
+				->setParameter('id', $id)
+				->setParameter('friend', $friend)
+				->setMaxResults(1)
+				->getQuery()
+				->getOneOrNullResult(AbstractQuery::HYDRATE_SINGLE_SCALAR) === 1;
 	}
 
 	/**

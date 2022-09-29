@@ -2,10 +2,11 @@
 
 namespace App\Entity;
 
+use App\Repository\SettlementMemberRepository;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SettlementMemberRepository::class)]
 class SettlementMember {
 	#[ORM\Id]
 	#[ORM\GeneratedValue]
@@ -13,7 +14,7 @@ class SettlementMember {
 	#[Serializer\Groups(["settlement_member:read"])]
 	private int $id;
 
-	#[ORM\ManyToOne(targetEntity: Settlement::class, cascade: ['persist'])]
+	#[ORM\ManyToOne(targetEntity: Settlement::class, cascade: ['persist'], inversedBy: 'members')]
 	#[ORM\JoinColumn(name: "settlement_id", referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
 	private Settlement $settlement;
 

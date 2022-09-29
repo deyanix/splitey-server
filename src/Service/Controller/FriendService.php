@@ -3,6 +3,7 @@
 namespace App\Service\Controller;
 
 use App\Entity\Friend;
+use App\Entity\User;
 use App\Model\Form\DeleteFriendData;
 use App\Repository\FriendRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,6 +15,11 @@ class FriendService {
 		private readonly FriendRepository $friendRepository,
 		private readonly UserService $userService
 	) {	}
+
+	public function hasUserFriend(User $user): bool {
+		$friend = $this->friendRepository->getUserFriend($this->userService->getCurrentUser(), $user);
+		return $friend !== null;
+	}
 
 	public function getFriends(): array {
 		return $this->friendRepository->getUserFriends($this->userService->getCurrentUser());
