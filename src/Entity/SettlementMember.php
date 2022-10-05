@@ -91,7 +91,8 @@ class SettlementMember {
 		return null;
 	}
 
-	#[Serializer\VirtualProperty(name: 'type')]
+	#[Serializer\VirtualProperty]
+	#[Serializer\SerializedName("type")]
 	#[Serializer\Groups(["settlement_member:read"])]
 	public function getStringType(): ?string {
 		return $this->getType()?->name;
