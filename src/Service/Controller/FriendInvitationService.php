@@ -4,7 +4,6 @@ namespace App\Service\Controller;
 
 use App\Entity\Friend;
 use App\Entity\FriendInvitation;
-use App\Entity\FriendInvitationStatus;
 use App\Model\Form\FriendInvitationData;
 use App\Repository\FriendInvitationRepository;
 use App\Repository\FriendRepository;

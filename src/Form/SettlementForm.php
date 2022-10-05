@@ -20,5 +20,4 @@ class SettlementForm extends AbstractType {
 			'csrf_protection' => false
 		]);
 	}
-
 }

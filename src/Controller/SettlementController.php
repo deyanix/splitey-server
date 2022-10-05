@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Form\SettlementForm;
 use App\Repository\SettlementRepository;
 use App\Service\Controller\SettlementService;
+use App\Service\Controller\TransferService;
 use App\Service\FormService;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use OpenApi\Attributes as OA;
@@ -17,6 +18,7 @@ class SettlementController extends AbstractController {
 	public function __construct(
 		private readonly FormService       $formService,
 		private readonly SettlementService $settlementService,
+		private readonly TransferService $transferService,
 	) { }
 
 	#[Rest\Get(name: 'get_all')]
@@ -84,7 +86,7 @@ class SettlementController extends AbstractController {
 
 	#[Rest\Get("/{id<\d+>}/summary", name: 'summary')]
 	#[Rest\View(statusCode: 200)]
-	#[OA\Get(summary: 'Gets a settlement summary')]
+	#[OA\Get(summary: 'Get a settlement summary')]
 	#[OA\Response(
 		response: 200,
 		description: 'Returns the summary of settlement',
@@ -118,7 +120,7 @@ class SettlementController extends AbstractController {
 	#[Rest\Get("/{id<\d+>}/arrangement", name: 'arrangement')]
 	#[Rest\QueryParam('optimized', default: false)]
 	#[Rest\View(statusCode: 200)]
-	#[OA\Get(summary: 'Gets a settlement arrangement')]
+	#[OA\Get(summary: 'Get a settlement arrangement')]
 	#[OA\Parameter(
 		name: 'id',
 		description: 'Identifier of the settlement',
@@ -136,5 +138,14 @@ class SettlementController extends AbstractController {
 			return ['data' => $this->settlementService->getOptimizedArrangement($id)];
 		}
 		return ['data' => $this->settlementService->getArrangement($id)];
+	}
+
+
+	#[Rest\Get("/{id<\d+>}/transfers", name: 'get_transfers')]
+	#[Rest\View(statusCode: 200, serializerGroups: ['transfer:read', 'settlement_member:read'])]
+	#[OA\Get(summary: 'Get settlement transfers')]
+	public function getTransfers(int $id) {
+		$settlement = $this->settlementService->getUserSettlement($id);
+		return $this->transferService->getTransfers($settlement);
 	}
 }

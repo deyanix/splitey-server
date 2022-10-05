@@ -2,7 +2,7 @@
 
 namespace App\Form;
 
-use App\Model\Form\CreateAccountData;
+use App\Model\Form\AccountCreateData;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -10,7 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class CreateAccountForm extends AbstractType {
+class AccountCreateForm extends AbstractType {
 	public function buildForm(FormBuilderInterface $builder, array $options) {
 		$builder
 			->add('firstName', TextType::class)
@@ -24,7 +24,7 @@ class CreateAccountForm extends AbstractType {
 	public function configureOptions(OptionsResolver $resolver) {
 		$resolver->setDefaults([
 			'csrf_protection' => false,
-			'data_class' => CreateAccountData::class
+			'data_class' => AccountCreateData::class
 		]);
 	}
 }

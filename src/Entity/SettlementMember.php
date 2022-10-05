@@ -14,6 +14,9 @@ class SettlementMember {
 	#[Serializer\Groups(["settlement_member:read"])]
 	private int $id;
 
+	#[ORM\Column(type: 'boolean')]
+	private bool $active;
+
 	#[ORM\ManyToOne(targetEntity: Settlement::class, cascade: ['persist'], inversedBy: 'members')]
 	#[ORM\JoinColumn(name: "settlement_id", referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
 	private Settlement $settlement;
@@ -78,8 +81,6 @@ class SettlementMember {
 		return $this->getUser()?->getLastName() ?? $this->getExternalFriend()?->getLastName();
 	}
 
-	#[Serializer\VirtualProperty]
-	#[Serializer\Groups(["settlement_member:read"])]
 	public function getType(): ?SettlementMemberType {
 		if ($this->getUser()) {
 			return SettlementMemberType::USER;
@@ -88,5 +89,19 @@ class SettlementMember {
 			return SettlementMemberType::EXTERNAL_FRIEND;
 		}
 		return null;
+	}
+
+	#[Serializer\VirtualProperty(name: 'type')]
+	#[Serializer\Groups(["settlement_member:read"])]
+	public function getStringType(): ?string {
+		return $this->getType()?->name;
+	}
+
+	public function isActive(): bool {
+		return $this->active;
+	}
+
+	public function setActive(bool $active): void {
+		$this->active = $active;
 	}
 }

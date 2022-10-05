@@ -15,11 +15,14 @@ class FormService {
 	}
 
 	public function handle(Request $request, string $class, mixed $default = null): FormInterface {
-		$form = $this->formFactory->create($class, $default);
+		$data = [
+			...$request->query->all(),
+			...$request->request->all(),
+			...$request->files->all()
+		];
 
-		$form->submit($request->query->all());
-		$form->submit($request->request->all());
-		$form->submit($request->files->all());
+		$form = $this->formFactory->create($class, $default);
+		$form->submit($data);
 		if (!$form->isValid()) {
 			throw new FormValidationException($form);
 		}

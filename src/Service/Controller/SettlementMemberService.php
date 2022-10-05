@@ -69,7 +69,9 @@ class SettlementMemberService {
 			throw new BadRequestException('Current user don\'t have an access to requested settlement');
 		}
 
-		$this->entityManager->remove($member);
+		$member->setExternalFriend(null);
+		$member->setUser(null);
+		$this->entityManager->persist($member);
 		$this->entityManager->flush();
 	}
 }

@@ -4,14 +4,14 @@ namespace App\Service\Controller;
 
 use App\Entity\EmailConfirmationToken;
 use App\Entity\User;
-use App\Model\Form\CreateAccountData;
+use App\Model\Form\AccountCreateData;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-class CreateAccountService {
+class AccountService {
 	public function __construct(
 		private readonly EntityManagerInterface      $entityManager,
 		private readonly MailerInterface             $mailer,
@@ -34,7 +34,7 @@ class CreateAccountService {
 		$this->mailer->send($email);
 	}
 
-	public function createAccount(CreateAccountData $data): User {
+	public function createAccount(AccountCreateData $data): User {
 		if ($this->userService->getUserByEmail($data->getEmail()) !== null) {
 			throw new BadRequestException('An account with this email address already exists');
 		}

@@ -5,7 +5,7 @@ namespace App\Model\Form;
 use App\Validator as AppAssert;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class CreateAccountData {
+class AccountCreateData {
 	#[Assert\Length(max: 63)]
 	#[Assert\NotBlank]
 	#[Assert\Type("string")]

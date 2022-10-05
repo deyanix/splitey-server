@@ -8,7 +8,7 @@ use FOS\RestBundle\Controller\Annotations as Rest;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-#[Rest\Route('/settlements', name: 'settlement')]
+#[Rest\Route('/settlements/members', name: 'settlement_member')]
 #[OA\Tag(name: 'Settlement')]
 class SettlementMemberController extends AbstractController {
 	public function __construct(
@@ -16,7 +16,7 @@ class SettlementMemberController extends AbstractController {
 		private readonly SettlementMemberService $memberService,
 	) { }
 
-	#[Rest\Post("/members/user", name: 'add_user_member')]
+	#[Rest\Post("/user", name: 'add_user')]
 	#[Rest\RequestParam('settlementId', requirements: '\d+', nullable: true)]
 	#[Rest\RequestParam('userId', requirements: '\d+', nullable: true)]
 	#[Rest\View(statusCode: 200)]
@@ -26,7 +26,7 @@ class SettlementMemberController extends AbstractController {
 		$this->memberService->addUserMember($settlement, $userId);
 	}
 
-	#[Rest\Post("/members/external-friend", name: 'add_external_friend_member')]
+	#[Rest\Post("/external-friend", name: 'add_external_friend')]
 	#[Rest\RequestParam('settlementId', requirements: '\d+', nullable: true)]
 	#[Rest\RequestParam('externalFriendId', requirements: '\d+', nullable: true)]
 	#[Rest\View(statusCode: 200)]
@@ -36,7 +36,7 @@ class SettlementMemberController extends AbstractController {
 		$this->memberService->addExternalFriendMember($settlement, $externalFriendId);
 	}
 
-	#[Rest\Delete("/members/{memberId<\d+>}", name: 'remove_member')]
+	#[Rest\Delete("/{memberId<\d+>}", name: 'remove')]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Delete(summary: 'Delete a member to settlement')]
 	public function removerMember(int $memberId) {

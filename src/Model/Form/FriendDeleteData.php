@@ -5,7 +5,7 @@ namespace App\Model\Form;
 use App\Entity\User;
 use OpenApi\Attributes as OA;
 
-class DeleteFriendData {
+class FriendDeleteData {
 	#[OA\Property('userId', type: 'integer')]
 	private User $user;
 

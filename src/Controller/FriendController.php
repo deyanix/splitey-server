@@ -2,10 +2,9 @@
 
 namespace App\Controller;
 
-use App\Entity\FriendInvitationStatus;
-use App\Form\DeleteFriendForm;
+use App\Form\FriendDeleteForm;
 use App\Form\FriendInvitationForm;
-use App\Model\Form\DeleteFriendData;
+use App\Model\Form\FriendDeleteData;
 use App\Model\Form\FriendInvitationData;
 use App\Service\Controller\FriendInvitationService;
 use App\Service\Controller\FriendService;
@@ -38,12 +37,12 @@ class FriendController extends AbstractController {
 		summary: 'Delete a friend',
 		requestBody: new OA\RequestBody(
 			content: new OA\JsonContent(
-				ref: new Model(type: DeleteFriendData::class)
+				ref: new Model(type: FriendDeleteData::class)
 			)
 		)
 	)]
 	public function deleteFriend(Request $request) {
-		$form = $this->formService->handle($request, DeleteFriendForm::class);
+		$form = $this->formService->handle($request, FriendDeleteForm::class);
 		$this->friendService->deleteFriend($form->getData());
 	}
 

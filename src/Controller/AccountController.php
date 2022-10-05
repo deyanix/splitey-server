@@ -2,10 +2,10 @@
 
 namespace App\Controller;
 
+use App\Form\AccountCreateForm;
 use App\Form\AuthorizedResetPasswordForm;
-use App\Form\CreateAccountForm;
 use App\Form\ResetPasswordForm;
-use App\Service\Controller\CreateAccountService;
+use App\Service\Controller\AccountService;
 use App\Service\Controller\ResetPasswordService;
 use App\Service\Controller\UserService;
 use App\Service\FormService;
@@ -20,9 +20,9 @@ use Symfony\Component\HttpFoundation\Request;
 #[Nelmio\Security(name: null)]
 class AccountController extends AbstractController{
 	public function __construct(
-		private readonly FormService $formService,
-		private readonly UserService $userService,
-		private readonly CreateAccountService $accountService,
+		private readonly FormService          $formService,
+		private readonly UserService          $userService,
+		private readonly AccountService       $accountService,
 		private readonly ResetPasswordService $resetPasswordService,
 	) {	}
 
@@ -55,7 +55,7 @@ class AccountController extends AbstractController{
 		)],
 	)))]
 	public function createAccount(Request $request) {
-		$form = $this->formService->handle($request, CreateAccountForm::class);
+		$form = $this->formService->handle($request, AccountCreateForm::class);
 		$this->accountService->createAccount($form->getData());
 	}
 
