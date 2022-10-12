@@ -12,6 +12,7 @@ use App\Service\Security\AccessTokenService;
 use App\Service\Security\RefreshTokenService;
 use DateTime;
 use Exception;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
@@ -45,7 +46,7 @@ class AuthenticationService {
 			throw new AuthenticationException('Wrong credentials');
 		}
 		if (!$user->isActivated()) {
-			throw new AuthenticationException('Not activated user');
+			throw new AuthenticationException('No activated user');
 		}
 		if ($user->isDisabled()) {
 			throw new AuthenticationException('Disabled user');
@@ -59,14 +60,17 @@ class AuthenticationService {
 	}
 
 	public function login(User $user, ?string $deviceUuid, bool $rememberMe): LoginResult {
-		$device = $this->deviceRepository->findOneBy(['uuid' => $deviceUuid]);
-		if ($device === null) {
+		if ($deviceUuid === null) {
 			$device = new Device();
-			if (!$rememberMe) {
+			if ($rememberMe) {
 				$device->setUuid(Uuid::v4());
 			}
 			$device->setUser($user);
 		} else {
+			$device = $this->deviceRepository->findOneBy(['uuid' => $deviceUuid]);
+			if (!($device instanceof Device) || $device->getUser() !== $user) {
+				throw new BadRequestException('Provided bad device UUID');
+			}
 			$this->refreshTokenRepository->invalidateTokensByDevice($device);
 		}
 
@@ -87,7 +91,7 @@ class AuthenticationService {
 	public function refresh(RefreshToken $token): LoginResult {
 		if ($token->getRefreshDate() <= new DateTime()) {
 			$this->refreshTokenRepository->invalidateTokensByDevice($token->getDevice());
-			$refreshToken = $this->refreshTokenService->createToken($token->getDevice());
+			$refreshToken = $this->refreshTokenService->createToken($token->getDevice(), $token->isRememberMe());
 		} else {
 			$refreshToken = $token;
 		}

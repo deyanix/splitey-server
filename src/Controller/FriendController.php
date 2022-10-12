@@ -2,12 +2,11 @@
 
 namespace App\Controller;
 
-use App\Form\FriendDeleteForm;
 use App\Form\FriendInvitationForm;
-use App\Model\Form\FriendDeleteData;
 use App\Model\Form\FriendInvitationData;
 use App\Service\Controller\FriendInvitationService;
 use App\Service\Controller\FriendService;
+use App\Service\Controller\UserService;
 use App\Service\FormService;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -21,6 +20,7 @@ class FriendController extends AbstractController {
 	public function __construct(
 		private readonly FriendService $friendService,
 		private readonly FriendInvitationService $invitationService,
+		private readonly UserService $userService,
 		private readonly FormService $formService,
 	) {}
 
@@ -31,19 +31,14 @@ class FriendController extends AbstractController {
 		return $this->friendService->getFriends();
 	}
 
-	#[Rest\Delete(name: 'delete')]
+	#[Rest\Delete(path: '/user/{id<\d+>}', name: 'delete')]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Delete(
-		summary: 'Delete a friend',
-		requestBody: new OA\RequestBody(
-			content: new OA\JsonContent(
-				ref: new Model(type: FriendDeleteData::class)
-			)
-		)
+		summary: 'Delete an user friend'
 	)]
-	public function deleteFriend(Request $request) {
-		$form = $this->formService->handle($request, FriendDeleteForm::class);
-		$this->friendService->deleteFriend($form->getData());
+	public function deleteFriend(int $id) {
+		$user = $this->userService->getUser($id);
+		$this->friendService->deleteFriend($user);
 	}
 
 	#[Rest\Get(path: '/invitations', name: 'get_invitations')]

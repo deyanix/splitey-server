@@ -13,6 +13,7 @@ class Transfer {
 	#[ORM\Id]
 	#[ORM\GeneratedValue]
 	#[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+	#[Serializer\Groups(["transfer:read"])]
 	private int $id;
 
 	#[ORM\Column(type: 'string', length: 63)]

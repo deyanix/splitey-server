@@ -2,12 +2,16 @@
 
 namespace App\Controller;
 
-use App\Form\SettlementForm;
+use App\Form\SettlementCreateForm;
+use App\Form\SettlementUpdateForm;
+use App\Model\Form\SettlementCreateData;
+use App\Model\Form\SettlementUpdateData;
 use App\Repository\SettlementRepository;
 use App\Service\Controller\SettlementService;
 use App\Service\Controller\TransferService;
 use App\Service\FormService;
 use FOS\RestBundle\Controller\Annotations as Rest;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -51,29 +55,33 @@ class SettlementController extends AbstractController {
 
 	#[Rest\Post(name: 'create')]
 	#[Rest\View(statusCode: 200, serializerGroups: ["settlement:read", "settlement_member:read"])]
-	#[OA\Post(summary: 'Create a settlement', requestBody: new OA\RequestBody(content: new OA\JsonContent(properties: [
-		new OA\Property(
-			property: 'name',
-			type: 'string'
-		)]
-	)))]
+	#[OA\Post(
+		summary: 'Create a settlement',
+		requestBody: new OA\RequestBody(
+			content: new OA\JsonContent(
+				ref: new Model(type: SettlementCreateData::class)
+			)
+		)
+	)]
 	public function create(Request $request) {
-		$form = $this->formService->handle($request, SettlementForm::class);
+		$form = $this->formService->handle($request, SettlementCreateForm::class);
 		return $this->settlementService->createSettlement($form->getData());
 	}
 
 	#[Rest\Put("/{id<\d+>}", name: 'update')]
 	#[Rest\View(statusCode: 200, serializerGroups: ["settlement:read", "settlement_member:read"])]
-	#[OA\Put(summary: 'Update a settlement', requestBody: new OA\RequestBody(content: new OA\JsonContent(properties: [
-		new OA\Property(
-			property: 'name',
-			type: 'string'
-		)]
-	)))]
+	#[OA\Put(
+		summary: 'Update a settlement',
+		requestBody: new OA\RequestBody(
+			content: new OA\JsonContent(
+				ref: new Model(type: SettlementUpdateData::class)
+			)
+		)
+	)]
 	public function update(int $id, Request $request) {
 		$settlement = $this->settlementService->getUserSettlement($id);
-		$form = $this->formService->handle($request, SettlementForm::class, $settlement);
-		return $this->settlementService->updateSettlement($form->getData());
+		$form = $this->formService->handle($request, SettlementUpdateForm::class, SettlementUpdateData::fromEntity($settlement));
+		return $this->settlementService->updateSettlement($form->getData()->toEntity($settlement));
 	}
 
 	#[Rest\Delete("/{id<\d+>}", name: 'delete')]

@@ -37,11 +37,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
 	private string $lastName;
 
 	#[ORM\Column(type: 'boolean')]
-	#[Serializer\Groups(["user:read"])]
 	private bool $activated = false;
 
 	#[ORM\Column(type: 'boolean')]
-	#[Serializer\Groups(["user:read"])]
 	private bool $disabled = false;
 
 	public function getId(): int {

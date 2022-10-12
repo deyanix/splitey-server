@@ -4,7 +4,6 @@ namespace App\Service\Controller;
 
 use App\Entity\Friend;
 use App\Entity\User;
-use App\Model\Form\FriendDeleteData;
 use App\Repository\FriendRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
@@ -25,10 +24,10 @@ class FriendService {
 		return $this->friendRepository->getUserFriends($this->userService->getCurrentUser());
 	}
 
-	public function deleteFriend(FriendDeleteData $data): void {
+	public function deleteFriend(User $user): void {
 		$friend = $this->friendRepository->getUserFriend(
 			$this->userService->getCurrentUser(),
-			$data->getUser()
+			$user
 		);
 
 		if (!($friend instanceof Friend)) {

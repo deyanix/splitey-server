@@ -19,7 +19,7 @@ class TransferService {
 	) { }
 
 	public function getTransfers(Settlement $settlement): array {
-		return $this->transferRepository->getTransferBySettlement($settlement->getId());
+		return $this->transferRepository->getTransfersBySettlement($settlement->getId());
 	}
 
 	public function getTransfer(int $id): Transfer {

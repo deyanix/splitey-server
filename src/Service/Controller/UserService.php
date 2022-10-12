@@ -12,6 +12,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Security\Core\Security;
 
 class UserService {
+
 	public function __construct(
 		private readonly EntityManagerInterface $entityManager,
 		private readonly UserRepository $userRepository,
@@ -26,6 +27,19 @@ class UserService {
 			return $user;
 		}
 		return null;
+	}
+
+	public function searchUsers(string $name): array {
+		$trimName = preg_replace('/\s+/', ' ', trim($name));
+		if (strlen($trimName) < 3) {
+			return [];
+		}
+
+		return $this->userRepository->searchUsers($trimName, $this->getCurrentUser()->getId());
+	}
+
+	public function getUser(int $id): ?User {
+		return $this->userRepository->find($id);
 	}
 
 	public function getUserByLogin(string $login): ?User {

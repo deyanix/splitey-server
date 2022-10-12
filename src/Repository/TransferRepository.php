@@ -11,12 +11,11 @@ class TransferRepository extends ServiceEntityRepository {
 		parent::__construct($registry, Transfer::class);
 	}
 
-	public function getTransferBySettlement(int $settlementId): array {
+	public function getTransfersBySettlement(int $settlementId): array {
 		return $this->createQueryBuilder('t')
 			->innerJoin('t.payingMember', 'pm')
 			->where('pm.settlement = :settlementId')
 			->setParameter('settlementId', $settlementId)
-			->setMaxResults(1)
 			->getQuery()
 			->getResult();
 	}
