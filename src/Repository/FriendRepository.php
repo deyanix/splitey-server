@@ -23,8 +23,8 @@ class FriendRepository extends ServiceEntityRepository {
 
 		$rsmRelation = new ResultSetMappingBuilder($this->getEntityManager());
 		$rsmRelation->addScalarResult('is_friend', 'isFriend', 'boolean');
-		$rsmRelation->addScalarResult('is_received_invitation', 'isReceivedInvitation', 'boolean');
-		$rsmRelation->addScalarResult('is_sent_invitation', 'isSentInvitation', 'boolean');
+		$rsmRelation->addScalarResult('received_invitation', 'receivedInvitation', 'integer');
+		$rsmRelation->addScalarResult('sent_invitation', 'sentInvitation', 'integer');
 
 		$statement = $this->prepareNativeQuery('Friend/SearchUsers', $rsm);
 		$statement->setParameter('name', "%$name%");

@@ -1,8 +1,8 @@
 SELECT
     u.*,
     (f.user1_id IS NOT NULL OR f.user2_id IS NOT NULL) AS is_friend,
-    (fi.recipient_id IS NOT NULL AND fi.recipient_id = :currentUserId) AS is_received_invitation,
-    (fi.sender_id IS NOT NULL AND fi.sender_id = :currentUserId) AS is_sent_invitation
+    IF(fi.recipient_id IS NOT NULL AND fi.recipient_id = :currentUserId, fi.id, NULL) AS received_invitation,
+    IF(fi.sender_id IS NOT NULL AND fi.sender_id = :currentUserId, fi.id, NULL) AS sent_invitation
 FROM user AS u
 LEFT JOIN friend f
     ON (u.id = f.user1_id AND f.user2_id = :currentUserId) OR
