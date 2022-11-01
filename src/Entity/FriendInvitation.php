@@ -21,6 +21,7 @@ class FriendInvitation {
 
 	#[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
 	#[ORM\JoinColumn(name: "recipient_id", referencedColumnName: 'id', nullable: true)]
+	#[Serializer\Groups(["friend_invitation:read"])]
 	private User $recipient;
 
 	#[ORM\Column(type: 'datetime')]

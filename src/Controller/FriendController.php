@@ -94,6 +94,13 @@ class FriendController extends AbstractController {
 		$this->invitationService->answer($id, false);
 	}
 
+	#[Rest\Post(path: '/invitations/{id<\d+>}/cancel', name: 'cancel_invitation')]
+	#[Rest\View(statusCode: 200)]
+	#[OA\Post(summary: 'Cancel invitation to friendship')]
+	public function cancelInvitation(int $id) {
+		$this->invitationService->cancel($id);
+	}
+
 	#[Rest\Post(path: '/invitations/see', name: 'see_invitations')]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Post(summary: 'See all invitations to friendship')]

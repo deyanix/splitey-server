@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Model\IndividualType;
 use App\Repository\SettlementMemberRepository;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
@@ -81,12 +82,12 @@ class SettlementMember {
 		return $this->getUser()?->getLastName() ?? $this->getExternalFriend()?->getLastName();
 	}
 
-	public function getType(): ?SettlementMemberType {
+	public function getType(): ?IndividualType {
 		if ($this->getUser()) {
-			return SettlementMemberType::USER;
+			return IndividualType::USER;
 		}
 		if ($this->getExternalFriend()) {
-			return SettlementMemberType::EXTERNAL_FRIEND;
+			return IndividualType::EXTERNAL_FRIEND;
 		}
 		return null;
 	}

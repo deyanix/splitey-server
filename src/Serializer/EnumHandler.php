@@ -2,13 +2,13 @@
 
 namespace App\Serializer;
 
-use BackedEnum;
 use JMS\Serializer\Context;
 use JMS\Serializer\GraphNavigatorInterface;
 use JMS\Serializer\Handler\SubscribingHandlerInterface;
 use JMS\Serializer\JsonDeserializationVisitor;
 use JMS\Serializer\JsonSerializationVisitor;
 use ReflectionEnum;
+use UnitEnum;
 
 class EnumHandler implements SubscribingHandlerInterface {
 	public static function getSubscribingMethods() {
@@ -39,7 +39,7 @@ class EnumHandler implements SubscribingHandlerInterface {
 	}
 
 	public function serializeEnum(JsonSerializationVisitor $visitor, $enum, array $type, Context $context) {
-		if (!($enum instanceof BackedEnum)) {
+		if (!($enum instanceof UnitEnum)) {
 			throw new \InvalidArgumentException('Value should be an enum');
 		}
 

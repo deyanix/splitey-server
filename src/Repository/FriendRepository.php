@@ -4,7 +4,8 @@ namespace App\Repository;
 
 use App\Entity\Friend;
 use App\Entity\User;
-use App\Model\CommonFriend;
+use App\Model\Individual;
+use App\Model\IndividualType;
 use App\Repository\Helper\QueryHelperTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
@@ -65,13 +66,17 @@ class FriendRepository extends ServiceEntityRepository {
 		$result = $statement->executeQuery()->fetchAllAssociative();
 
 		return array_map(function ($row) {
-			$friend = new CommonFriend();
-			$friend->setUserId($row['user_id']);
-			$friend->setExternalFriendId($row['external_friend_id']);
-			$friend->setFirstName($row['first_name']);
-			$friend->setLastName($row['last_name']);
-			$friend->setUsername($row['username']);
-			return $friend;
+			$userId = $row['user_id'];
+			$externalFriendId = $row['external_friend_id'];
+			$type = is_int($userId) ? IndividualType::USER : IndividualType::EXTERNAL_FRIEND;
+
+			$individual = new Individual();
+			$individual->setId($userId ?? $externalFriendId);
+			$individual->setType($type);
+			$individual->setFirstName($row['first_name']);
+			$individual->setLastName($row['last_name']);
+			$individual->setUsername($row['username']);
+			return $individual;
 		}, $result);
 	}
 }

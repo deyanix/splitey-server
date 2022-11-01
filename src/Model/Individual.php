@@ -2,27 +2,22 @@
 
 namespace App\Model;
 
-class CommonFriend {
-	private ?int $userId;
-	private ?int $externalFriendId;
+use JMS\Serializer\Annotation as Serializer;
+
+class Individual {
+	private int $id;
 	private string $firstName;
 	private string $lastName;
 	private ?string $username;
+	#[Serializer\Type("Enum")]
+	private IndividualType $type;
 
-	public function getUserId(): ?int {
-		return $this->userId;
+	public function getId(): int {
+		return $this->id;
 	}
 
-	public function setUserId(?int $userId): void {
-		$this->userId = $userId;
-	}
-
-	public function getExternalFriendId(): ?int {
-		return $this->externalFriendId;
-	}
-
-	public function setExternalFriendId(?int $externalFriendId): void {
-		$this->externalFriendId = $externalFriendId;
+	public function setId(int $id): void {
+		$this->id = $id;
 	}
 
 	public function getFirstName(): string {
@@ -47,5 +42,13 @@ class CommonFriend {
 
 	public function setUsername(?string $username): void {
 		$this->username = $username;
+	}
+
+	public function getType(): IndividualType {
+		return $this->type;
+	}
+
+	public function setType(IndividualType $type): void {
+		$this->type = $type;
 	}
 }

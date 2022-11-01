@@ -58,6 +58,18 @@ class FriendInvitationService {
 		$this->entityManager->flush();
 	}
 
+	public function cancel(int $id): void {
+		$currentUser = $this->userService->getCurrentUser();
+		$invitation = $this->invitationRepository->getActiveInvitation($id);
+		if (!($invitation instanceof FriendInvitation) || $invitation->getSender() !== $currentUser) {
+			throw new NotFoundHttpException('Not found invitation');
+		}
+
+		$invitation->setActive(false);
+		$this->entityManager->persist($invitation);
+		$this->entityManager->flush();
+	}
+
 	public function answer(int $id, bool $accepted): void {
 		$currentUser = $this->userService->getCurrentUser();
 		$invitation = $this->invitationRepository->getActiveInvitation($id);
