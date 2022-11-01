@@ -10,3 +10,5 @@
 # Custom
 /dataSources.xml
 /commandlinetools
+/csv-plugin.xml
+/discord.xml

@@ -31,7 +31,17 @@ class FriendController extends AbstractController {
 		return $this->friendService->getFriends();
 	}
 
-	#[Rest\Delete(path: '/user/{id<\d+>}', name: 'delete')]
+	#[Rest\Get(path: '/users', name: 'get')]
+	#[Rest\View(statusCode: 200, serializerGroups: ['user:read'])]
+	#[Rest\QueryParam(name: 'name')]
+	#[OA\Get(
+		summary: 'Get users for new friendship'
+	)]
+	public function getUsers(string $name) {
+		return $this->friendService->getUsers($name);
+	}
+
+	#[Rest\Delete(path: '/users/{id<\d+>}', name: 'delete')]
 	#[Rest\View(statusCode: 200)]
 	#[OA\Delete(
 		summary: 'Delete an user friend'

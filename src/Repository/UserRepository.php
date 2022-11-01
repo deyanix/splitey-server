@@ -22,7 +22,6 @@ class UserRepository extends ServiceEntityRepository {
 	}
 
 	public function searchUsers(string $name, int $currentUserId): array {
-
 		$rsm = new ResultSetMappingBuilder($this->getEntityManager());
 		$rsm->addRootEntityFromClassMetadata(User::class, 'u');
 

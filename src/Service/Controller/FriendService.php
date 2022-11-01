@@ -15,6 +15,16 @@ class FriendService {
 		private readonly UserService $userService
 	) {	}
 
+	public function getUsers(string $name): array {
+		// TODO: copied from UserService
+		$trimName = preg_replace('/\s+/', ' ', trim($name));
+		if (strlen($trimName) < 3) {
+			return [];
+		}
+
+		return $this->friendRepository->searchUsers($name, $this->userService->getCurrentUser()->getId());
+	}
+
 	public function hasUserFriend(User $user): bool {
 		$friend = $this->friendRepository->getUserFriend($this->userService->getCurrentUser(), $user);
 		return $friend !== null;

@@ -35,7 +35,7 @@ class SettlementRepository extends ServiceEntityRepository {
 
 		$result = new PaginationResult();
 		$result->setRows($query->getResult());
-		$result->setTotal($query->setResultSetMapping($rsmTotal)->getResult()[0]['total'] ?? 0);
+		$result->setTotal($query->setResultSetMapping($rsmTotal)->getOneOrNullResult()['total'] ?? 0);
 		return $result;
 	}
 

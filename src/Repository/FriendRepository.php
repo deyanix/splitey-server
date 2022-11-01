@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Model\CommonFriend;
 use App\Repository\Helper\QueryHelperTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 class FriendRepository extends ServiceEntityRepository {
@@ -14,6 +15,28 @@ class FriendRepository extends ServiceEntityRepository {
 
 	public function __construct(ManagerRegistry $registry) {
 		parent::__construct($registry, Friend::class);
+	}
+
+	public function searchUsers(string $name, int $currentUserId): array {
+		$rsm = new ResultSetMappingBuilder($this->getEntityManager());
+		$rsm->addRootEntityFromClassMetadata(User::class, 'u');
+
+		$rsmRelation = new ResultSetMappingBuilder($this->getEntityManager());
+		$rsmRelation->addScalarResult('is_friend', 'isFriend', 'boolean');
+		$rsmRelation->addScalarResult('is_received_invitation', 'isReceivedInvitation', 'boolean');
+		$rsmRelation->addScalarResult('is_sent_invitation', 'isSentInvitation', 'boolean');
+
+		$statement = $this->prepareNativeQuery('Friend/SearchUsers', $rsm);
+		$statement->setParameter('name', "%$name%");
+		$statement->setParameter('currentUserId', $currentUserId);
+
+		return array_map(
+			fn ($row) => array_combine(['user', 'relation'], $row),
+			array_map(null,
+				$statement->getResult(),
+				$statement->setResultSetMapping($rsmRelation)->getResult()
+			)
+		);
 	}
 
 	public function getUserFriend(User $user1, User $user2): ?Friend {
